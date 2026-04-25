@@ -1,0 +1,352 @@
+/* ==========================================
+   1. ЦВЕТОВЫЕ ПЕРЕМЕННЫЕ (Светлая и Темная темы)
+   ========================================== */
+:root {
+    --bg-main: #f9f9f9;
+    --bg-container: #ffffff;
+    --text-main: #333333;
+    --text-muted: #666666;
+    --accent: #0056b3;
+    --accent-hover: #004494;
+    --accent-bg: #eef5ff;
+    --border: #eaeaea;
+    --note-bg: #fff3cd;
+    --note-border: #ffc107;
+    --tag-bg: #e9ecef;
+    --image-placeholder: #e9ecef;
+}
+
+body.dark-theme {
+    --bg-main: #121212;
+    --bg-container: #1e1e1e;
+    --text-main: #e0e0e0;
+    --text-muted: #aaaaaa;
+    --accent: #66b2ff;
+    --accent-hover: #99ccff;
+    --accent-bg: #0d233a;
+    --border: #333333;
+    --note-bg: #2d2604;
+    --note-border: #b38600;
+    --tag-bg: #333333;
+    --image-placeholder: #2a2a2a;
+}
+
+/* ==========================================
+   2. БАЗОВЫЕ НАСТРОЙКИ
+   ========================================== */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.6;
+    color: var(--text-main);
+    background-color: var(--bg-main);
+    margin: 0;
+    padding: 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* ==========================================
+   3. ГЛАВНЫЕ МАКЕТЫ (СТРУКТУРА СТРАНИЦ)
+   ========================================== */
+/* Одноколоночный контейнер (для Главной страницы) */
+.container {
+    width: 100%;
+    max-width: 800px;
+    margin: 40px auto;
+    background: var(--bg-container);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: background-color 0.3s;
+    box-sizing: border-box;
+}
+
+/* Двухколоночный макет (для Страниц со статьями) */
+.page-layout {
+    display: grid;
+    /* МАГИЯ: 1. Меню (250px) | 2. Текст (до 850px) | 3. Невидимый противовес (250px) */
+    grid-template-columns: 250px minmax(0, 850px) 250px;
+    gap: 30px;
+    max-width: 1500px;
+    margin: 40px auto;
+    padding: 0 20px;
+    justify-content: center;
+    align-items: start;
+    box-sizing: border-box;
+}
+
+/* Основной текст внутри статьи */
+.content {
+    background: var(--bg-container);
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    min-width: 0;
+    transition: background-color 0.3s;
+    box-sizing: border-box;
+}
+
+/* ==========================================
+   4. БОКОВОЕ МЕНЮ И НАВИГАЦИЯ
+   ========================================== */
+.sidebar {
+    width: 100%; /* Теперь ширину диктует сетка, а не сам блок */
+    box-sizing: border-box; /* ЗАЩИТА ОТ НАЕЗЖАНИЯ: отступы идут внутрь */
+    position: sticky;
+    top: 40px;
+    background: var(--bg-container);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    transition: background-color 0.3s;
+}
+
+.sidebar h3 {
+    margin-top: 0;
+    font-size: 1.2em;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 10px;
+}
+
+.toc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.toc-list li {
+    margin-bottom: 10px;
+}
+
+.toc-list a {
+    text-decoration: none;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    font-size: 0.95em;
+    display: block;
+}
+
+.toc-list a:hover {
+    color: var(--accent);
+}
+
+/* Активный пункт меню при прокрутке */
+.toc-list a.active {
+    color: var(--accent);
+    font-weight: bold;
+    transform: translateX(8px);
+}
+
+.nav-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.nav-link:hover {
+    text-decoration: underline;
+}
+
+/* ==========================================
+   5. ТИПОГРАФИКА И БЛОКИ ТЕКСТА
+   ========================================== */
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 15px;
+    margin-bottom: 20px;
+}
+
+h1 {
+    font-size: 2.5em;
+    margin: 0;
+    color: var(--text-main);
+}
+
+h2, h3 {
+    color: var(--text-main);
+    margin-top: 1.5em;
+}
+
+strong.term {
+    color: var(--accent);
+    background: var(--accent-bg);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.note {
+    background-color: var(--note-bg);
+    border-left: 4px solid var(--note-border);
+    padding: 15px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+/* Кнопка переключения темы */
+.theme-btn {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.theme-btn:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent);
+}
+
+/* ==========================================
+   6. КАРТОЧКИ СТАТЕЙ (Главная страница)
+   ========================================== */
+.articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    margin-top: 30px;
+}
+
+.article-card {
+    background: var(--bg-container);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.article-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    border-color: var(--accent);
+}
+
+.article-card h3 {
+    margin-top: 0;
+    color: var(--accent);
+}
+
+.article-card p {
+    color: var(--text-muted);
+    font-size: 0.95em;
+    margin-bottom: 0;
+}
+
+.tag {
+    display: inline-block;
+    background: var(--tag-bg);
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    margin-bottom: 10px;
+    color: var(--text-muted);
+}
+
+/* ==========================================
+   7. КАРТИНКИ И ЭФФЕКТЫ
+   ========================================== */
+.image-placeholder {
+    width: 100%;
+    height: 300px;
+    background-color: var(--image-placeholder);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+img {
+    max-width: 100%;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+/* Зум при наведении */
+.content img, .container img {
+    cursor: zoom-in;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.content img:hover, .container img:hover {
+    transform: scale(1.02);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+}
+
+/* Модальное окно (полноэкранные картинки) */
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    padding-top: 50px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(5px);
+    cursor: zoom-out;
+}
+
+.modal-content {
+    margin: auto;
+    display: block;
+    max-width: 90%;
+    max-height: 85vh;
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    cursor: default;
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 40px;
+    color: #f1f1f1;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.close-modal:hover {
+    color: #bbb;
+}
+
+/* ==========================================
+   8. АДАПТИВНОСТЬ (Для мобильных устройств)
+   ========================================== */
+@media (max-width: 1150px) {
+    .page-layout {
+        /* Убираем правый противовес на средних экранах */
+        grid-template-columns: 250px minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 800px) {
+    .page-layout {
+        /* Ставим меню и текст друг под другом на телефонах */
+        grid-template-columns: 1fr;
+    }
+    .sidebar {
+        width: 100%;
+        position: static;
+        box-sizing: border-box;
+    }
+}

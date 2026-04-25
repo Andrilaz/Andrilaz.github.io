@@ -1,9 +1,37 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
-    <title>Мой сайт</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>База знаний по графике Windows</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Привет, мир! Это мой сайт на GitHub Pages.</h1>
+
+<div class="container">
+    <div class="header-top">
+        <h1>Технический блог</h1>
+        <button id="theme-toggle" class="theme-btn">🌙 Темная тема</button>
+    </div>
+    
+    <p>Сборник подробных материалов о работе графической подсистемы Windows, технологиях синхронизации и оптимизации задержек.</p>
+
+    <div class="articles-grid">
+        <a href="presentation-model.html" class="article-card">
+            <span class="tag">Windows Graphics</span>
+            <h3>Presentation Model</h3>
+            <p>Подробный гайд о механизмах передачи отрендеренных кадров игры на дисплей (DWM, DXGI, SwapChain, MPO).</p>
+        </a>
+
+        <a href="#" class="article-card">
+            <span class="tag">В разработке</span>
+            <h3>VRR (Variable Refresh Rate)</h3>
+            <p>Как работают технологии G-Sync, FreeSync и адаптивная синхронизация на уровне системы.</p>
+        </a>
+    </div>
+</div>
+
+<script src="script.js"></script>
+
 </body>
 </html>

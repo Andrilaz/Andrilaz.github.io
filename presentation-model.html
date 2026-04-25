@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Presentation Model | Гайд</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page-layout">
+    
+    <aside class="sidebar">
+        <a href="index.html" class="nav-link">← На главную</a>
+        <h3>Содержание</h3>
+        <ul class="toc-list">
+            <li><a href="#terms">Основные термины</a></li>
+            <li><a href="#history-win7">История Windows 7</a></li>
+        </ul>
+    </aside>
+
+    <main class="content">
+        <div class="header-top">
+            <h1>Presentation Model</h1>
+            <button id="theme-toggle" class="theme-btn">🌙</button>
+        </div>
+        
+        <p>Это определение механизма (пути) передачи отрендеренных кадров игры на дисплей.</p>
+
+        <h2 id="terms">Справка и основные термины</h2>
+        <p>Для понимания материала важно разобраться в базовых понятиях:</p>
+        <ul>
+            <li><strong class="term">DWM (Desktop Window Manager)</strong> – композитор рабочего стола Windows. Простыми словами: DWM берет картинки всех открытых окон, накладывает их друг на друга (композиция) и отправляет итоговый результат на вывод. Главный нюанс: DWM имеет два буфера и всегда работает с вертикальной синхронизацией, что добавляет как минимум один кадр задержки, если приложение проходит через него.</li>
+            <li><strong class="term">DXGI (Инфраструктура графики Microsoft DirectX)</strong> – это подсистема, которая инкапсулирует некоторые задачи низкого уровня, необходимые Direct3D. С точки зрения программиста DXGI охватывает большую часть кода для перечисления, создания SwapChain и презентации.</li>
+            <li><strong class="term">SwapChain (цепочка буферов)</strong> — это механизм, с помощью которого Direct3D приложение выстраивает последовательность отрисованных кадров для вывода на дисплей. Возможно, вы слышали о двойной или тройной буферизации, вертикальной синхронизации (V-Sync). Все это – свойства DXGI SwapChain.</li>
+        </ul>
+
+        <div class="note">
+            В DXGI существует четыре различных swap effect, которые игра может использовать для своей цепочки буферов: Discard (Flip), Sequential (Flip), Discard (BitBlt) и Sequential (BitBlt). Окончательный выбор сценария определяется используемым приложением SwapEffect и целым рядом оптимизаций.
+        </div>
+
+        <img src="images/SE1.png" alt="Схема SwapEffect">
+
+        <h2 id="history-win7">История Presentation Model: Windows 7</h2>
+        <p>Во времена Windows 7 основными методами были <strong>оконный BitBlt</strong> и <strong>Полноэкранный Flipping.</strong> Долгие годы среди геймеров жило золотое правило: хочешь минимальный инпут-лаг и плавность – играй только в «Эксклюзивном полном экране».</p>
+        
+        <p>Оконный режим был синонимом тормозов. Причина крылась в ограничениях модели BitBlt: вместо того чтобы попасть в DWM напрямую, игра использовала промежуточную поверхность для копирования кадра. Лишняя операция копирования – это лишняя нагрузка на видеопамять и заметная задержка, а еще плюсом сверху DWM добавлял кадр задержки композиции.</p>
+        
+        <img src="images/win7.png" alt="Схема SwapEffect Windows 7">
+        
+        <p><strong class="term">FSE (Full-Screen Exclusive):</strong> В этом режиме игра брала управление выводом на себя, полностью обходя DWM. Композитор фактически переставал отрисовывать рабочий стол для этого монитора. Это давало максимальную скорость, но лишало возможности мгновенно сворачивать игру и использовать оконные оверлеи.</p>
+    </main>
+
+</div>
+
+<div id="imgModal" class="image-modal">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content" id="zoomedImg">
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
