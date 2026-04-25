@@ -39,7 +39,8 @@ html {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
     line-height: 1.6;
     color: var(--text-main);
     background-color: var(--bg-main);
@@ -164,15 +165,28 @@ body {
     margin-bottom: 20px;
 }
 
+.content p {
+    text-align: justify;
+    hyphens: none; /* PRO-совет: включает автоматический перенос слов */
+}
+
 h1 {
     font-size: 2.5em;
     margin: 0;
     color: var(--text-main);
+    text-align: center;
 }
 
-h2, h3 {
+h2{
     color: var(--text-main);
     margin-top: 1.5em;
+    text-align: center;
+}
+
+h3 {
+    color: var(--text-main);
+    margin-top: 1.5em;
+    text-align: center;
 }
 
 strong.term {
@@ -207,6 +221,8 @@ strong.term {
     background: var(--accent-bg);
     border-color: var(--accent);
 }
+
+
 
 /* ==========================================
    6. КАРТОЧКИ СТАТЕЙ (Главная страница)
@@ -350,3 +366,107 @@ img {
         box-sizing: border-box;
     }
 }
+
+/* --- Спец-оформление для сложных списков (с ромбами и стрелками) --- */
+ul.custom-list {
+    list-style-type: none; /* Убираем стандартные точки */
+    padding-left: 20px;
+}
+
+ul.custom-list > li {
+    position: relative;
+    margin-bottom: 10px;
+}
+
+/* Ромбик для первого уровня */
+ul.custom-list > li::before {
+    content: "❖";
+    position: absolute;
+    left: -20px;
+    color: var(--text-main);
+    font-size: 1.1em;
+}
+
+/* Настройки для вложенного списка */
+ul.custom-list ul {
+    list-style-type: none;
+    padding-left: 25px;
+    margin-top: 5px;
+}
+
+ul.custom-list ul li {
+    position: relative;
+    margin-bottom: 8px;
+}
+
+/* Стрелочка для второго уровня */
+ul.custom-list ul li::before {
+    content: "➤";
+    position: absolute;
+    left: -22px;
+    color: var(--text-main);
+}
+
+/* ==========================================
+   9. ТАБЛИЦЫ
+   ========================================== */
+.custom-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 30px 0;
+    font-size: 0.95em;
+}
+
+.custom-table th, .custom-table td {
+    border: 1px solid var(--border);
+    padding: 12px 15px;
+    text-align: left;
+    vertical-align: top; /* Прижимаем текст к верхнему краю ячейки */
+}
+
+.custom-table th {
+    background-color: var(--tag-bg); /* Серый фон для шапки */
+    font-weight: bold;
+    text-align: center;
+}
+
+/* --- Цвета строк для СВЕТЛОЙ темы --- */
+.row-green { background-color: #aed581; color: #222; }
+.row-yellow { background-color: #ffd54f; color: #222; }
+.row-red { background-color: #e57373; color: #222; }
+
+/* Ссылки внутри цветных таблиц в светлой теме делаем темнее для читаемости */
+.row-green a, .row-yellow a, .row-red a {
+    color: #003366;
+}
+
+/* --- Цвета строк для ТЕМНОЙ темы --- */
+body.dark-theme .row-green { background-color: rgba(139, 195, 74, 0.15); color: var(--text-main); }
+body.dark-theme .row-yellow { background-color: rgba(255, 193, 7, 0.15); color: var(--text-main); }
+body.dark-theme .row-red { background-color: rgba(244, 67, 54, 0.15); color: var(--text-main); }
+
+body.dark-theme .row-green a, 
+body.dark-theme .row-yellow a, 
+body.dark-theme .row-red a {
+    color: var(--accent); /* Возвращаем стандартный цвет ссылок в темной теме */
+}
+
+/* ==========================================
+   10. ЦВЕТНЫЕ СПИСКИ СТАТУСОВ
+   ========================================== */
+.status-list {
+    list-style-type: disc; /* Обычные круглые точки */
+    padding-left: 25px;
+    margin-top: 5px;
+    margin-bottom: 20px;
+}
+
+/* Цвета для светлой темы (насыщенные) */
+.status-green { color: #2e7d32; }
+.status-yellow { color: #c48b00; }
+.status-red { color: #c62828; }
+
+/* Цвета для темной темы (более светлые и яркие для контраста) */
+body.dark-theme .status-green { color: #81c784; }
+body.dark-theme .status-yellow { color: #ffca28; }
+body.dark-theme .status-red { color: #e57373; }

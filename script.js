@@ -53,26 +53,37 @@ if (modal) {
 // ==========================================
 const tocLinks = document.querySelectorAll('.toc-list a');
 
-// Если боковое меню есть на странице, запускаем наблюдатель
 if (tocLinks.length > 0) {
-    const observerOptions = {
-        root: null,
-        rootMargin: '-50px 0px -70% 0px', 
-        threshold: 0
-    };
+    // МАГИЯ ЗДЕСЬ: Мы собираем только те заголовки, на которые реально есть ссылки в меню
+    const headings = Array.from(tocLinks)
+        .map(link => {
+            const id = link.getAttribute('href'); // Получаем href (например, "#History")
+            return document.querySelector(id); // Ищем элемент с таким ID на странице
+        })
+        .filter(el => el !== null); // Отбрасываем пустые (если вдруг опечатка в ссылке)
 
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                tocLinks.forEach(link => link.classList.remove('active'));
-                
-                const activeId = entry.target.id;
-                const activeLink = document.querySelector(`.toc-list a[href="#${activeId}"]`);
-                
-                if (activeLink) activeLink.classList.add('active');
-            }
-        });
-    }, observerOptions);
+    if (headings.length > 0) {
+        const highlightMenu = () => {
+            let currentId = headings[0].id; // По умолчанию светится первый пункт
 
-    document.querySelectorAll('.content h2[id]').forEach(section => observer.observe(section));
+            headings.forEach(heading => {
+                const rect = heading.getBoundingClientRect();
+                // 150px - граница. Если нужный заголовок выше нее, он считается "текущим"
+                if (rect.top <= 150) {
+                    currentId = heading.id;
+                }
+            });
+
+            // Перекрашиваем меню
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === `#${currentId}`) {
+                    link.classList.add('active');
+                }
+            });
+        };
+
+        window.addEventListener('scroll', highlightMenu);
+        highlightMenu();
+    }
 }
