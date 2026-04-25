@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Refresh Rate | Гайд</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page-layout">
+    
+    <aside class="sidebar">
+        <a href="index.html" class="nav-link">← На главную</a>
+        <h3>Содержание</h3>
+        <ul class="toc-list">
+            <li><a href="#min-latency">Минимальная задержка</a></li>
+            <li><a href="#no-tearing">Устранение разрывов</a></li>
+            <li><a href="#vsync-lock">V-Sync + Лимит FPS</a></li>
+            <li><a href="#latent-sync">SpecialK Latent Sync</a></li>
+            <li><a href="#tearing-off">Latent Sync + Tearing Off</a></li>
+        </ul>
+    </aside>
+
+    <main class="content">
+        <div class="header-top">
+            <h1>Fixed Refresh Rate Monitor</h1> 
+            <button id="theme-toggle" class="theme-btn">🌙</button>
+        </div>
+
+        <h2 id="min-latency">1. Для минимальной задержки</h2>
+        <p><strong>VSync ВЫКЛ + Reflex.</strong></p>
+        <p>Если в игре нет Reflex, его можно добавить принудительно через RTSS или SpecialK для улучшения отзывчивости управления.</p>
+
+        <h2 id="no-tearing">2. Для устранения разрывов изображения и повышения плавности</h2>
+        
+        <h3 id="vsync-lock">2.1 V-Sync + лимит FPS</h3>
+        <p>Используйте лимит FPS с <strong>равным</strong> или <strong>дробным</strong> значением относительно герцовки монитора.</p>
+        <p>Для этого лучше всего подходят лимитеры <strong>RTSS</strong> (в режимах Async или Back Edge sync) или <strong>SpecialK</strong> (в режимах Low latency / Normal).</p>
+
+        <div class="note">
+            <p><strong>В чем проблема?</strong> Основная беда V-Sync – создание очереди кадров, что дает задержку минимум в 2+ кадра. Если же ограничить FPS так, чтобы видеокарта не успевала "забивать" этот буфер, мы получим задержку всего в <strong>~1 кадр</strong>.</p>
+        </div>
+
+        <p>Значение лока должно строго <strong>соответствовать</strong> частоте обновления экрана (можно попробовать на 0.100 или 0.001 меньше) либо являться её <strong>целым делителем</strong> (например, Hz/2 или Hz/3). Установка произвольных ограничений провоцирует возникновение ошибок анимации (animation error).</p>
+
+        <p style="text-align: center;"><strong>Пример:</strong></p>
+        <img src="images/Vsync2.png" alt="Сравнение задержки V-Sync без лока">
+        <img src="images/Vsync22.png" alt="Сравнение задержки V-Sync без лока">
+        <p style="text-align: center;"><em>V-sync БЕЗ лока (Высокая задержка)</em></p>
+        
+        <img src="images/Vsync1.png" alt="Сравнение задержки V-Sync с локом">
+        <img src="images/Vsync11.png" alt="Сравнение задержки V-Sync с локом">
+        <p style="text-align: center;"><em>V-sync С локом (Низкая задержка)</em></p>
+
+        <p>В RTSS нажатием ПКМ по полю <em>Framerate limit</em> можно быстро выбрать точное значение герцовки:</p>
+        <img src="images/RTSS.png" alt="Выбор герцовки в RTSS">
+
+        <p>В SpecialK нажатием ПКМ по ползунку фрейм-лимитера можно выбрать значение по герцовке и её дробные факторы:</p>
+        <img src="images/SK.png" alt="Выбор факторов герцовки в SpecialK">
+
+        <h3 id="latent-sync">2.2 SpecialK Latent Sync</h3>
+        <p><strong>Latent Sync</strong> – это функция, обеспечивающая условное отсутствие разрывов изображения. Она предлагает такую же или даже меньшую задержку ввода, чем VRR.</p>
+        <p>Это двухфазный ограничитель, который ожидает до и после вызова Present в игре. Время простоя ЦП распределяется между ожиданием периода вертикального гашения (для стабильности картинки без разрывов) и задержкой начала следующего кадра (для снижения инпут-лага).</p>
+        
+        <div class="note">
+            <p><strong>Delay Bias:</strong> Этот параметр управляет балансом. Хотя по умолчанию значение равно 0, его можно настроить в пользу снижения задержки ввода, рискуя появлением периодических разрывов. <strong>Auto Bias</strong> — рекомендуемый режим, где SpecialK сам корректирует смещение (значение 50% обычно является безопасным).</p>
+        </div>
+
+        <img src="images/L0.png" alt="Пример работы Latent Sync"> 
+        <img src="images/L50.png" alt="Пример работы Latent Sync">  
+        <img src="images/L90.png" alt="Пример работы Latent Sync">
+        <p style="text-align: center;"><em>Задержка 14мс без Delay Bias -> 8мс (50% Auto) -> 3мс (90% Auto)</em></p>
+
+        <h3 id="tearing-off">2.3 Latent Sync + Allow Tearing OFF</h3>
+        <p>Выключение Тиринга (схоже с включением V-Sync) при включенном Latent Sync дает гарантированную картинку без разрывов с минимальной задержкой в 1 кадр, которую можно дополнительно снизить через Delay Bias. Можно сказать, это <strong>"V-Sync на стероидах"</strong>.</p>
+        <img src="images/Tearing.png" alt="Настройка Tearing Mode">
+
+    </main>
+</div>
+
+<div id="imgModal" class="image-modal">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content" id="zoomedImg">
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
