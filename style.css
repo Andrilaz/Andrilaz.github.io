@@ -222,6 +222,12 @@ strong.term {
     border-color: var(--accent);
 }
 
+hr.section-divider {
+    border: 0;
+    height: 1px;
+    background: var(--border); /* Используем цвет границ из темы */
+    margin: 40px 0; /* Делаем большие отступы: 40px сверху и снизу */
+}
 
 
 /* ==========================================
@@ -470,3 +476,31 @@ body.dark-theme .row-red a {
 body.dark-theme .status-green { color: #81c784; }
 body.dark-theme .status-yellow { color: #ffca28; }
 body.dark-theme .status-red { color: #e57373; }
+
+/* ==========================================
+   12. ИНФОРМАЦИЯ ОБ АВТОРАХ
+   ========================================== */
+.article-meta {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    margin-top: -10px;
+    margin-bottom: 30px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.meta-divider {
+    color: var(--border);
+}
+
+.article-meta a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.article-meta a:hover {
+    text-decoration: underline;
+}

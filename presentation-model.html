@@ -21,6 +21,8 @@
             <li><a href="#PMp">Presentation Model на практике</a></li>
             <li><a href="#monitoring">Мониторинг Present mode</a></li>
             <li><a href="#check-mpo">Проверка MPO</a></li>
+            <li><a href="#mpo-problems">Проблемы MPO и Composed Flip</a></li>
+            <li><a href="#sources">Источники и полезные ссылки</a></li>
         </ul>
     </aside>
 
@@ -28,6 +30,11 @@
         <div class="header-top">
             <h1>Presentation Model в Windows</h1> 
             <button id="theme-toggle" class="theme-btn">🌙</button>
+        </div>
+
+        <div class="article-meta">
+            <span>Автор: <strong><a href="https://youtube.com/@maxim0v?si=k4IGFqAEaoDe-0MW" target="_blank"><strong>Andrilaz</strong></a></strong></span>
+            <span class="meta-divider">•</span>
         </div>
 
        <h3 id="terms">Справка и основные термины</h3>
@@ -77,6 +84,8 @@
        <p>Следовательно, в современной Windows 11 со всеми оптимизациями модель <strong>оконного Flip</strong> применяется ко всем играм, работающим через DXGI. И если игра находится в independent flip то она получает наилучшую производительность </p>
         <img src="images/FSO.png" alt="FSO">
 
+        <hr class="section-divider">
+
         <h3 id="MPO">Multi-Plane Overlay</h3>
         <p><strong>Multi-Plane Overlay (MPO)</strong> – подразумевает использование дополнительных выделенных аппаратных плоскостей сканирования в графическом процессоре, на которые могут подаваться кадры приложения, а графический процессор затем самостоятельно сканирует их на дисплей, тем самым позволяя графическому процессору взять на себя работу композиции.</p>
         <P>Это позволяет играм обходить DWM в различных смешанных и оконных режимах, тем самым устраняя задержку отображения, которая в противном случае возникла бы. С MPO вам не обязательно соблюдать правила активации стандартного DirectFlip </P>
@@ -91,7 +100,7 @@
         </ul>
         <p>Так же поддержка зависит от конфигурации графического процессора и дисплея. Необычные настройки драйверов или дисплея могут отключить поддержку MPO, например, пользовательское масштабирование графического процессора (NIS/RSR/целочисленное и т. д.). Это мы разберем в отдельной теме с проблемами MPO и Composed:Flip </p>
         </div>
-        
+        <hr class="section-divider">
         
         <h2 id="PMp">Presentation Model на практике</h2>
         <p>Теперь, когда все оптимизации рассмотрены, давайте вернемся к анализу различных сценариев <strong>Presentation Model</strong>.</p>
@@ -120,7 +129,7 @@
         </ul>
     </li>
 </ul>
-  
+  <hr class="section-divider">
   <p><strong>BitBlt (D3D11)</strong></p>
         <img src="images/BitBlt.png" alt="BitBlt">
         
@@ -175,6 +184,7 @@
         </tr>
     </tbody>
 </table>
+<hr class="section-divider">
 
 <h3 id="WindowMode">Режимы окна в современных играх</h3>
 
@@ -191,7 +201,7 @@
     <br>
     <li><strong>Unity/Unreal Engine окно</strong> — Эти движки имеют особенный режим окна в котором swapchain игры всегда зависим от системного разрешение. Изменение разрешения в настройках игры меняет разрешение рендера но не swapchain. Поэтому в большинстве игр на UE не можно сменить разрешение в оконном режиме.</li>
 </ol>
-
+<hr class="section-divider">
 <h2 id="monitoring">Мониторинг Present mode</h2>
 
 <p>Для мониторинга лучшим вариантом будет RTSS.</p>
@@ -350,6 +360,18 @@
         <img src="images/game2.png" alt="Xbox Gamebar Remember this is a game">
     </li>
 </ul>
+
+<h2 id="sources">📚 Источники и полезные ссылки</h2>
+        <ul class="custom-list">
+            <li><a href="https://devblogs.microsoft.com/directx/dxgi-flip-model/" target="_blank">DirectX Developer Blog: For best performance, use DXGI flip model</a></li>
+            <li><a href="https://wiki.special-k.info/Presentation_Model" target="_blank">Special K Wiki - Presentation Model</a></li>
+            <li><a href="https://blurbusters.com/gsync-101-input-lag-tests-and-settings/" target="_blank">Blur Busters: G-Sync 101</a></li>
+            </ul>
+
+        <hr class="article-divider">
+        <div class="article-footer">...
+
+        </div>
 
 </main>
 
