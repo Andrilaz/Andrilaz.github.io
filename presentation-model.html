@@ -330,6 +330,18 @@
 
     <br>
 
+    <br>
+
+    <li><strong>RTX Video HDR</strong> отключает MPO когда проигрывается видео.</li>
+
+    <br>
+
+     <br>
+
+    <li><strong>Проигрывание 4К видео</strong> в браузере на некоторых системах может сломать MPO.</li>
+
+    <br>
+
     <li><strong>DSC (Display Stream Compression)</strong> на видеокартах Nvidia ниже RTX 5000 отключает MPO. <a href="https://trychen.com/feature/video-bandwidth" target="_blank">Калькулятор DSC</a>.</li>
 
     <br>
@@ -344,11 +356,6 @@
 
     <li><strong>10-bit в SDR</strong> ломает MPO, если вы на старой винде. Это было исправлено в Win 11 24H2 и актуальных драйверах Nvidia.</li>
 
-    <br>
-
-    <li><strong>Проигрывание 4К видео</strong> в браузере на некоторых системах может сломать MPO.</li>
-
-    <br>
 
     <br>
 
@@ -356,6 +363,11 @@
 
     <br>
 
+    <br>
+
+    <li><strong>Ноутбуки с MUX-Switch</strong> При переключении в режим дискретной графики (dGpu only) теряется поддержка MPO.</li>
+
+    <br>
     
     <br>
 
@@ -374,7 +386,8 @@
 </ul>
 
 <h3 id="dldsr">(DL)Dsr</h3><br>
-WIP
+<P>(DL)DSR отключает MPO по эотму очень важно соблюдать правила стандартного DirectFlip.</P>
+<p> Чтобы избежать composed:flip, необходимо устанавливать (DL)DSR-разрешение в настройках Windows до запуска игры.у</P> 
 
 <h2 id="sources">📚 Источники и полезные ссылки</h2>
         <ul class="custom-list">
