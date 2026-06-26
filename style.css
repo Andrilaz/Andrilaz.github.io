@@ -504,3 +504,23 @@ body.dark-theme .status-red { color: #e57373; }
 .article-meta a:hover {
     text-decoration: underline;
 }
+
+/* ==========================================
+   13. СТИЛЬ ДЛЯ ЦИТАТ (BLOCKQUOTE)
+   ========================================== */
+blockquote {
+    font-style: italic;
+    background-color: var(--accent-bg);
+    border-left: 3px solid var(--accent);
+    margin: 15px 0;
+    padding: 10px 15px;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.95em;
+    color: var(--text-main);
+}
+
+/* Специфичный цвет фона для цитат в светлой теме, 
+   чтобы они не сливались, если accent-bg слишком блеклый */
+blockquote p {
+    margin: 0; /* Убираем лишние отступы у параграфов внутри цитаты */
+}
