@@ -36,7 +36,6 @@
         </div>
         
         <h3 id="reference">ℹ️ Справка</h3>
-        <div class="note">
             <p><strong>VRR (G-Sync / G-Sync Compatible, AMD FreeSync, VESA Adaptive-Sync, HDMI 2.1 VRR)</strong> – технология, которая синхронизирует частоту обновления монитора с частотой кадров игры. Создана для избавления от негативных последствий работы V-Sync и получения плавной картинки без разрывов с наименьшей задержкой в диапазоне её работы. Но не является панацеей, если игра имеет проблемы со статтерами.</p>
             <p> <a href="https://youtu.be/xpbVMHOSAmk?si=_P_qf42b81jBiC7f" target="_blank">Почему VRR – не замена V-Sync? Ответ в video</a></p>
 
@@ -45,7 +44,7 @@
             <p><strong>NVCP / NVAPP</strong> – Панель управления NVIDIA (NVIDIA Control Panel) или новое приложение NVIDIA app.</p>
 
             <p><strong>Режим Низкой Задержки</strong> – это параметр драйвера NVIDIA, также известный как Low Latency Mode или LLM. В режиме со значением «Ультра» его также называют ULLM/NULL (Nvidia Ultra Low Latency mode) с отсылкой на нулевую очередь кадров.</p>
-        </div>
+        
 <hr class="section-divider">
         <h3 id="vrr-nvidia">🟢 VRR на Nvidia</h3>
         <ol>
@@ -57,7 +56,7 @@
                     <li><strong>Если у вас классическая Панель (NVCP):</strong> Перейдите в раздел <em>Настройка G-SYNC</em> -> Включите <em>G-SYNC</em> и выберите пункт только <strong>В ПОЛНОЭКРАННОМ РЕЖИМЕ</strong>. Ниже нажмите на монитор и установите галочку <em>Включить параметры для выбранной модели дисплея</em>.</li>
                 </ul>
             </li>
-            <li>В играх <strong>С поддержкой Reflex</strong>: V-Sync ВКЛ (В игре) + Reflex ВКЛ.</li>
+            <li>В играх <strong>С поддержкой Reflex</strong>: V-Sync ВКЛ (В игре) + Reflex ВКЛ.</li> (Если все работает правильно то максимальный фпс должен быть немного ниже гц монитора)
             <li>В играх <strong>БЕЗ поддержки Reflex</strong>: V-Sync ВКЛ (В игре / если в игре он реализован плохо, то принудительно в NVCP/NVAPP) + Режим Низкой Задержки: Ультра* (в драйвере) <strong>ИЛИ</strong> встроить Reflex через RTSS/SpecialK с ограничением «быстрым» лимитером FPS по формуле <code><strong>Refresh - (Refresh x Refresh / 3600) = FPS Cap**</strong></code>.</li>
         </ol>
 <hr class="section-divider">
