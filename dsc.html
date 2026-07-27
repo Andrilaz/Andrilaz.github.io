@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandwidth Calculator | Гайд</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ==========================================
+           СТИЛИ КАЛЬКУЛЯТОРА
+           ========================================== */
+        #bandwidth-calc {
+            margin-top: 30px;
+        }
+        
+        #bandwidth-calc .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        #bandwidth-calc label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            color: var(--text-main);
+        }
+
+        #bandwidth-calc input[type="number"],
+        #bandwidth-calc select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background-color: var(--bg-container);
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            box-sizing: border-box;
+            height: 42px;
+        }
+
+        #bandwidth-calc input[type="number"]:focus,
+        #bandwidth-calc select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-bg);
+        }
+
+        #bandwidth-calc .custom-inputs {
+            display: none;
+            background: var(--tag-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px dashed var(--border);
+            margin-bottom: 20px;
+        }
+
+        #bandwidth-calc .custom-inputs.show {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* Плитки пресетов */
+        #bandwidth-calc #presets {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 30px 0;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 600px) {
+            #bandwidth-calc #presets { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        #bandwidth-calc .preset-tile {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 15px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-main);
+            font-weight: bold;
+            font-size: 1.05rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #bandwidth-calc .preset-tile:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        #bandwidth-calc .preset-tile.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        #bandwidth-calc .preset-tile .res-sub {
+            font-weight: normal;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        #bandwidth-calc .preset-tile.active .res-sub {
+            color: var(--bg-main);
+        }
+
+        /* Вывод результатов */
+        #bandwidth-calc #output {
+            margin-top: 30px;
+            display: none;
+        }
+
+        #bandwidth-calc .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        #bandwidth-calc .result-box {
+            background: var(--note-bg);
+            border: 1px solid var(--note-border);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        #bandwidth-calc .result-box p {
+            margin: 0 0 10px 0;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+
+        #bandwidth-calc .result-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        /* Индикатор MPO */
+        #bandwidth-calc .mpo-box {
+            background: var(--bg-main);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        #bandwidth-calc .mpo-box p {
+            margin: 0 0 10px 0;
+            text-align: center;
+            font-weight: bold;
+            color: var(--text-main);
+        }
+
+        #bandwidth-calc .mpo-status-list {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 0.95rem;
+        }
+
+        #bandwidth-calc .mpo-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-muted);
+            transition: color 0.2s;
+        }
+
+        #bandwidth-calc .mpo-item.active {
+            color: var(--text-main);
+        }
+
+        /* Секция подключений */
+        #bandwidth-calc .connections-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 800px) {
+            #bandwidth-calc .connections-grid { grid-template-columns: 1fr; gap: 20px; }
+        }
+
+        #bandwidth-calc .conn-col h4 {
+            margin: 0 0 15px 0;
+            color: var(--text-main);
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 5px;
+            text-align: left;
+        }
+
+        #bandwidth-calc .connection {
+            margin: 12px 0;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        #bandwidth-calc .status-green { font-weight: bold; }
+        #bandwidth-calc .status-red { font-weight: bold; }
+        #bandwidth-calc .status-yellow { font-weight: bold; }
+
+        #bandwidth-calc .footnotes {
+            margin-top: 30px;
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+        }
+
+        #bandwidth-calc .footnote-text {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        #bandwidth-calc sup.ref-mark {
+            color: var(--accent);
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page-layout">
+    
+    <!-- Боковое меню -->
+    <aside class="sidebar">
+        <a href="index.html" class="nav-link">← На главную</a>
+        <h3>Содержание</h3>
+        <ul class="toc-list">
+            <li><a href="#calculator-title">Калькулятор Bandwidth</a></li>
+            <li><a href="#results-title">Результаты и подключения</a></li>
+        </ul>
+    </aside>
+
+    <!-- Основной контент (Контейнер 850px) -->
+    <main class="content">
+        <div class="header-top">
+            <h1 id="calculator-title">Калькулятор пропускной способности</h1> 
+            <button id="theme-toggle" class="theme-btn">🌙</button>
+        </div>
+
+        <p>Этот инструмент помогает рассчитать пропускную способность, необходимую для видеосигнала, исходя из разрешения, частоты обновления, глубины цвета и таймингов. Вы также можете узнать, потянет ли ваш HDMI®, DisplayPort™ или USB-C® выбранные настройки (и потребуется ли для этого DSC), а также проверить совместимость с MPO на видеокартах NVIDIA.</p>
+
+        <!-- БЛОК КАЛЬКУЛЯТОРА -->
+        <div id="bandwidth-calc">
+            <form id="calcForm">
+                <div class="input-group">
+                    <div>
+                        <label for="hactive">Разрешение по горизонтали (px):</label>
+                        <input type="number" id="hactive" value="1920" min="1" required/>
+                    </div>
+                    <div>
+                        <label for="vactive">Разрешение по вертикали (px):</label>
+                        <input type="number" id="vactive" value="1080" min="1" required/>
+                    </div>
+                    <div>
+                        <label for="refresh">Частота обновления (Гц):</label>
+                        <input type="number" id="refresh" value="60" min="1" step="1" required/>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div>
+                        <label for="bits">Глубина цвета на канал (бит):</label>
+                        <select id="bits">
+                            <option value="8">8-bit</option>
+                            <option value="10">10-bit</option>
+                            <option value="12">12-bit</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="timings">Стандарт таймингов:</label>
+                        <select id="timings" onchange="updateTimings()">
+                            <option value="old">CVT (Old)</option>
+                            <option value="rb2" selected>CVT RB2 (New)</option>
+                            <option value="custom">Свои (CUSTOM)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="chroma">Цветовая субдискретизация:</label>
+                        <select id="chroma">
+                            <option value="444" selected>4:4:4</option>
+                            <option value="422">4:2:2</option>
+                            <option value="420">4:2:0</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="customInputs" class="custom-inputs">
+                    <div>
+                        <label for="hblank">Горизонтальное гашение (px):</label>
+                        <input type="number" id="hblank" value="280" min="1" required/>
+                    </div>
+                    <div>
+                        <label for="vblank">Вертикальное гашение (линии):</label>
+                        <input type="number" id="vblank" value="45" min="1" required/>
+                    </div>
+                </div>
+            </form>
+
+            <div id="presets">
+                <div class="preset-tile active" data-preset="fullhd60">
+                    Full HD @ 60Hz
+                    <div class="res-sub">1920x1080</div>
+                </div>
+                <div class="preset-tile" data-preset="qhd60">
+                    QHD @ 60Hz
+                    <div class="res-sub">2560x1440</div>
+                </div>
+                <div class="preset-tile" data-preset="uwqhd60">
+                    UWQHD @ 60Hz
+                    <div class="res-sub">3440x1440</div>
+                </div>
+                <div class="preset-tile" data-preset="4k60">
+                    4K @ 60Hz
+                    <div class="res-sub">3840x2160</div>
+                </div>
+                <div class="preset-tile" data-preset="4k240">
+                    4K @ 240Hz
+                    <div class="res-sub">3840x2160</div>
+                </div>
+                <div class="preset-tile" data-preset="8k60">
+                    8K @ 60Hz
+                    <div class="res-sub">7680x4320</div>
+                </div>
+            </div>
+
+            <div id="output">
+                <h2 id="results-title">Результаты</h2>
+                
+                <div class="results-grid">
+                    <div class="result-box">
+                        <p>Без сжатия:</p>
+                        <div class="result-value"><span id="bandwidth"></span> Gbps</div>
+                    </div>
+                    <div class="result-box">
+                        <p>Со сжатием (DSC):</p>
+                        <div class="result-value"><span id="compbandwidth"></span> Gbps</div>
+                    </div>
+                    <div class="result-box">
+                        <p>Пиксельная частота:</p>
+                        <div class="result-value"><span id="pixelclock"></span> MHz</div>
+                    </div>
+                </div>
+
+                <div class="mpo-box">
+                    <p>Статус MPO для видеокарт NVIDIA (лимит Pixel Clock):</p>
+                    <div id="mpo-indicator" class="mpo-status-list"></div>
+                </div>
+
+                <h3>Поддерживаемые интерфейсы:</h3>
+                <div class="connections-grid">
+                    <div class="conn-col">
+                        <h4>HDMI®</h4>
+                        <div id="hdmi-list"></div>
+                    </div>
+                    <div class="conn-col">
+                        <h4>DisplayPort™</h4>
+                        <div id="dp-list"></div>
+                    </div>
+                    <div class="conn-col">
+                        <h4>USB-C®<sup class="ref-mark">1</sup></h4>
+                        <div id="usbc-list"></div>
+                    </div>
+                </div>
+
+                <div class="footnotes">
+                    <p class="footnote-text">¹ Прямое подключение USB-C® к USB-C® (например, от ноутбука к монитору с использованием Alt Mode без передачи данных USB) обеспечивает ту же пропускную способность, что и соответствующий стандарт DisplayPort™ в центральной колонке.</p>
+                    <p class="footnote-text">² Реальная пропускная способность составляет около 80% от заявленной скорости для старых стандартов и 97% для новых из-за накладных расходов на кодирование.</p>
+                    <p class="footnote-text">³ При использовании концентратора (хаба) USB-C® с портами передачи данных обычно 2 из 4 высокоскоростных линий забираются под данные, оставляя для видео только 2 линии, что фактически вдвое снижает доступную пропускную способность.</p>
+                </div>
+            </div>
+        </div>
+        <!-- КОНЕЦ БЛОКА КАЛЬКУЛЯТОРА -->
+
+    </main>
+</div>
+
+<!-- Подключаем твой основной скрипт сайта (переключатель темы и зум картинок) -->
+<script src="script.js"></script>
+
+<!-- Скрипт самого калькулятора -->
+<script>
+(function() {
+    let prevHactive = 1920;
+
+    function calculateBlanks(type, hactive, vactive, refresh) {
+        let hblank, vblank, vLinesRnd;
+        hactive = parseInt(hactive);
+        vactive = parseInt(vactive);
+        vLinesRnd = vactive;
+        if (type === 'old') {
+            const minVsyncBp = 550; 
+            const hPeriodEst = ((1 / refresh - minVsyncBp / 1e6) / (vLinesRnd + 3)) * 1e6;
+            let idealDuty = 30 - (300 * hPeriodEst / 1000);
+            if (idealDuty < 20) idealDuty = 20;
+            hblank = Math.floor((hactive * (idealDuty / (100 - idealDuty))) / 16) * 16;
+            vblank = Math.floor(minVsyncBp / hPeriodEst) + 4;
+        } else {
+            const rbMinVBlank = 460;
+            const hPeriodEst = (1e6 / refresh - rbMinVBlank) / vLinesRnd;
+            vblank = Math.max(Math.floor(rbMinVBlank / hPeriodEst) + 1, 15); 
+            hblank = 80;
+        }
+        return { hblank, vblank, vLinesRnd };
+    }
+
+    window.updateTimings = function() {
+        const root = document.getElementById('bandwidth-calc');
+        const timings = root.querySelector('#timings').value;
+        const customInputs = root.querySelector('#customInputs');
+        const hactive = parseInt(root.querySelector('#hactive').value) || 0;
+        const vactive = parseInt(root.querySelector('#vactive').value) || 0;
+        const refresh = parseFloat(root.querySelector('#refresh').value) || 0;
+
+        if (timings === 'custom') {
+            customInputs.classList.add('show');
+            root.querySelector('#vactive').removeAttribute('readonly');
+        } else {
+            customInputs.classList.remove('show');
+            const { hblank, vblank } = calculateBlanks(timings, hactive, vactive, refresh);
+            root.querySelector('#hblank').value = hblank;
+            root.querySelector('#vblank').value = vblank;
+            if (hactive !== prevHactive) { 
+                 const commonRes = {
+                    1920: 1080, 2560: 1440, 3440: 1440, 3840: 2160, 7680: 4320 
+                 };
+                 if (commonRes[hactive]) {
+                     root.querySelector('#vactive').value = commonRes[hactive];
+                 } else {
+                     root.querySelector('#vactive').value = Math.round(hactive * 9 / 16);
+                 }
+            }
+            prevHactive = hactive;
+        }
+        calculate();
+    };
+
+    window.setPreset = function(presetKey) {
+        const presets = {
+            fullhd60: { h: 1920, v: 1080, r: 60, t: 'rb2' },
+            qhd60: { h: 2560, v: 1440, r: 60, t: 'rb2' },
+            uwqhd60: { h: 3440, v: 1440, r: 60, t: 'rb2' },
+            '4k60': { h: 3840, v: 2160, r: 60, t: 'rb2' },
+            '4k240': { h: 3840, v: 2160, r: 240, t: 'rb2' },
+            '8k60': { h: 7680, v: 4320, r: 60, t: 'rb2' }
+        };
+        const p = presets[presetKey];
+        if (p) {
+            const root = document.getElementById('bandwidth-calc');
+            root.querySelector('#hactive').value = p.h;
+            root.querySelector('#vactive').value = p.v;
+            root.querySelector('#refresh').value = p.r;
+            root.querySelector('#timings').value = p.t;
+            root.querySelectorAll('.preset-tile').forEach(t => t.classList.remove('active'));
+            root.querySelector(`.preset-tile[data-preset="${presetKey}"]`).classList.add('active');
+            updateTimings();
+        }
+    };
+
+    window.calculate = function() {
+        const root = document.getElementById('bandwidth-calc');
+        const hactive = parseInt(root.querySelector('#hactive').value) || 0;
+        const vactive = parseInt(root.querySelector('#vactive').value) || 0;
+        const refresh = parseFloat(root.querySelector('#refresh').value) || 0;
+        const bits = parseInt(root.querySelector('#bits').value) || 0;
+        const chroma = root.querySelector('#chroma').value;
+        const hblank = parseInt(root.querySelector('#hblank').value) || 0;
+        const vblank = parseInt(root.querySelector('#vblank').value) || 0;
+        
+        const presets = {
+            fullhd60: { h: 1920, v: 1080, r: 60, t: 'rb2' },
+            qhd60: { h: 2560, v: 1440, r: 60, t: 'rb2' },
+            uwqhd60: { h: 3440, v: 1440, r: 60, t: 'rb2' },
+            '4k60': { h: 3840, v: 2160, r: 60, t: 'rb2' },
+            '4k240': { h: 3840, v: 2160, r: 240, t: 'rb2' },
+            '8k60': { h: 7680, v: 4320, r: 60, t: 'rb2' }
+        };
+        
+        root.querySelectorAll('.preset-tile').forEach(t => t.classList.remove('active'));
+        const currentTimings = root.querySelector('#timings').value;
+        for (let key in presets) {
+            const p = presets[key];
+            if (p.h === hactive && p.v === vactive && p.r === refresh && p.t === currentTimings) { 
+                 const tile = root.querySelector(`.preset-tile[data-preset="${key}"]`);
+                 if(tile) tile.classList.add('active');
+                 break;
+            }
+        }
+        
+        if (hactive && vactive && refresh) {
+            const htotal = hactive + hblank;
+            const vtotal = vactive + vblank;
+            const pixelClock = htotal * vtotal * refresh / 1e6;
+            
+            let channels = 3;
+            if (chroma === '422') channels = 2;
+            else if (chroma === '420') channels = 1.5;
+            
+            const bppActual = bits * channels;
+            const bandwidth = (pixelClock * 1e6 * bppActual) / 1e9;
+            const bppBase = 8 * channels;
+            const bandwidthBase = (pixelClock * 1e6 * bppBase) / 1e9;
+            const compBandwidth = bandwidthBase / 3;
+            
+            root.querySelector('#pixelclock').textContent = pixelClock.toFixed(2);
+            const bwSpan = root.querySelector('#bandwidth');
+            const cbwSpan = root.querySelector('#compbandwidth');
+            bwSpan.textContent = bandwidth.toFixed(2);
+            cbwSpan.textContent = compBandwidth.toFixed(2);
+            
+            const dp14Max = 25.92;
+            
+            if (bandwidth > dp14Max) {
+                bwSpan.style.color = 'var(--text-muted)'; bwSpan.style.fontSize = '1.3rem';
+                cbwSpan.style.color = 'var(--accent)'; cbwSpan.style.fontSize = '1.6rem';
+            } else {
+                bwSpan.style.color = 'var(--text-main)'; bwSpan.style.fontSize = '1.6rem';
+                cbwSpan.style.color = 'var(--text-muted)'; cbwSpan.style.fontSize = '1.3rem';
+            }
+
+            // --- БЛОК ЛОГИКИ ИНДИКАТОРА MPO ---
+            const mpoLimits = [
+                { name: 'GTX 16 / RTX 20', limit: 1330 },
+                { name: 'RTX 30', limit: 1335 },
+                { name: 'RTX 40', limit: 1350 },
+                { name: 'RTX 50', limit: Infinity }
+            ];
+
+            let mpoHtml = '';
+            mpoLimits.forEach(series => {
+                let isSupported = pixelClock <= series.limit;
+                let statusClass = isSupported ? 'status-green' : 'status-red';
+                let icon = isSupported ? '✓' : '❌';
+                let itemClass = isSupported ? 'mpo-item active' : 'mpo-item';
+                
+                mpoHtml += `<div class="${itemClass}">
+                    <span class="${statusClass}">${icon}</span> 
+                    <span>${series.name}</span>
+                </div>`;
+            });
+            
+            root.querySelector('#mpo-indicator').innerHTML = mpoHtml;
+            // ------------------------------------
+            
+            const connections = [
+                { type: 'hdmi', name: 'HDMI® 1.4', real: 8.16, dsc: false },
+                { type: 'hdmi', name: 'HDMI® 2.0', real: 14.4, dsc: false },
+                { type: 'hdmi', name: 'HDMI® 2.1', real: 42.67, dsc: true },
+                { type: 'hdmi', name: 'HDMI® 2.2', real: 85.33, dsc: true },
+                { type: 'dp', name: 'DP 1.2', real: 17.28, dsc: false },
+                { type: 'dp', name: 'DP 1.4', real: 25.92, dsc: true },
+                { type: 'dp', name: 'DP40', real: 38.79, dsc: true },
+                { type: 'dp', name: 'DP54', real: 52.36, dsc: true },
+                { type: 'dp', name: 'DP80', real: 77.58, dsc: true },
+                { type: 'usbc', name: 'DP 1.4 Alt Mode Hub<sup class="ref-mark">3</sup>', real: 12.96, dsc: true },
+                { type: 'usbc', name: 'DP54 Alt Mode Hub<sup class="ref-mark">3</sup>', real: 26.18, dsc: true },
+                { type: 'usbc', name: 'DP80 Alt Mode Hub<sup class="ref-mark">3</sup>', real: 38.79, dsc: true }
+            ];
+            
+            let hdmiHtml = '';
+            let dpHtml = '';
+            let usbcHtml = '';
+            
+            connections.forEach(conn => {
+                let statusClass, statusText;
+                if (bandwidth <= conn.real) {
+                    statusClass = 'status-green';
+                    statusText = '✓ Ок';
+                } else if (conn.dsc && compBandwidth <= conn.real) {
+                    statusClass = 'status-yellow';
+                    statusText = '⚠ С DSC';
+                } else {
+                    statusClass = 'status-red';
+                    statusText = '✗ Нет';
+                }
+                const html = `<div class="connection">
+                    <strong>${conn.name}</strong>:<br>
+                    <span class="${statusClass}">${statusText}</span> (~${conn.real.toFixed(2)}Gbps)<sup class="ref-mark">2</sup>
+                </div>`;
+                if(conn.type === 'hdmi') hdmiHtml += html;
+                else if(conn.type === 'dp') dpHtml += html;
+                else usbcHtml += html;
+            });
+            
+            root.querySelector('#hdmi-list').innerHTML = hdmiHtml;
+            root.querySelector('#dp-list').innerHTML = dpHtml;
+            root.querySelector('#usbc-list').innerHTML = usbcHtml;
+            root.querySelector('#output').style.display = 'block';
+        }
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+        const root = document.getElementById('bandwidth-calc');
+        if(!root) return;
+        
+        root.querySelector('#presets').addEventListener('click', e => {
+            const tile = e.target.closest('.preset-tile');
+            if(tile) setPreset(tile.getAttribute('data-preset'));
+        });
+        
+        root.querySelectorAll('input, select').forEach(el => {
+            el.addEventListener('input', function() {
+                if(this.id === 'timings') {
+                    updateTimings();
+                } else if ((this.id === 'hactive' || this.id === 'refresh') && root.querySelector('#timings').value !== 'custom') {
+                    updateTimings();
+                } else if (this.id === 'vactive' && root.querySelector('#timings').value !== 'custom') {
+                    calculate();
+                } else {
+                    calculate();
+                }
+            });
+        });
+        
+        updateTimings();
+        calculate();
+    });
+})();
+</script>
+</body>
+</html>
