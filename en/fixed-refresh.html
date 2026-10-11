@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixed Refresh Rate | Guide</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page-layout">
+    
+    <aside class="sidebar">
+        <a href="https://andrilaz.github.io/" class="nav-link">← Home</a>
+        <h3>Table of Contents</h3>
+        <ul class="toc-list">
+            <li><a href="#min-latency">Minimal Latency</a></li>
+            <li><a href="#no-tearing">Eliminating Tearing</a></li>
+            <li><a href="#vsync-lock">V-Sync + FPS Limit</a></li>
+            <li><a href="#latent-sync">SpecialK Latent Sync</a></li>
+            <li><a href="#tearing-off">Latent Sync + Tearing Off</a></li>
+        </ul>
+    </aside>
+
+    <main class="content">
+        <div class="header-top">
+            <h1>Fixed Refresh Rate Monitors</h1> 
+            <button id="theme-toggle" class="theme-btn">🌙</button>
+        </div>
+        
+        <div class="article-meta">
+            <span>Author: <strong><a href="https://t.me/Andrilazz" target="_blank"><strong>Andrilaz</a></strong>  | <a href="https://youtube.com/@maxim0v?si=k4IGFqAEaoDe-0MW" target="_blank"><strong>Max.Mov</strong></a></strong></span>
+            <span class="meta-divider">•</span>
+        </div>
+        
+
+
+        <h2 id="min-latency">1. For Minimal Latency</h2>
+        <p><strong>V-Sync OFF + Reflex.</strong></p>
+        <p>If a game lacks native Reflex support, you can inject it via RTSS or SpecialK to improve control responsiveness.</p>
+
+        <h2 id="no-tearing">2. For Eliminating Screen Tearing & Improving Smoothness</h2>
+        
+        <h3 id="vsync-lock">2.1 V-Sync + FPS Limit</h3>
+        <p>Use an FPS limit matching an <strong>exact integer multiplier</strong> or <strong>fractional division</strong> relative to display refresh rate.</p>
+        <p>The best tools for this are <strong>RTSS</strong> (in Async or Back Edge sync modes) or <strong>SpecialK</strong> (in Low Latency / Normal modes).</p>
+
+        <div class="note">
+            <p><strong>What is the core issue?</strong> Standard V-Sync creates a frame buffer queue, introducing a minimum delay of 2+ frames. Capping frame rates prevents the GPU from saturating this buffer, reducing input latency to approximately <strong>~1 frame</strong>.</p>
+        </div>
+
+        <p>The FPS limit should strictly match refresh rate (or 0.100 / 0.001 below) or be an integer divisor (e.g., Hz/2 or Hz/3). Arbitrary FPS caps cause frame animation errors and pacing judder.</p>
+
+        <p style="text-align: center;"><strong>Example:</strong></p>
+        <img src="images/Vsync2.png" alt="V-Sync Latency Comparison without cap">
+        <img src="images/Vsync22.png" alt="V-Sync Latency Comparison without cap">
+        <p style="text-align: center;"><em>V-Sync WITHOUT limit (High latency)</em></p>
+        
+        <img src="images/Vsync1.png" alt="V-Sync Latency Comparison with cap">
+        <img src="images/Vsync11.png" alt="V-Sync Latency Comparison with cap">
+        <p style="text-align: center;"><em>V-Sync WITH limit (Low latency)</em></p>
+
+        <p>In RTSS, right-clicking the <em>Framerate limit</em> field allows quick selection of exact refresh rate values:</p>
+        <img src="images/RTSS.png" alt="Selecting Refresh Rate in RTSS">
+
+        <p>In SpecialK, right-clicking the frame limiter slider opens exact fractional refresh rate presets:</p>
+        <img src="images/SK.png" alt="Selecting Refresh Factors in SpecialK">
+
+        <h3 id="latent-sync">2.2 SpecialK Latent Sync</h3>
+        <p><strong>Latent Sync</strong> provides tear-free visual output with input latency matching or beating VRR setups on fixed refresh displays.</p>
+        <p>It acts as a two-phase frame limiter operating before and after the Present API call. CPU idle time is split between waiting for vertical blanking intervals (preventing tearing) and pacing the next frame start (minimizing latency).</p>
+        
+        <div class="note">
+            <p><strong>Delay Bias:</strong> Controls balance between latency and frame delivery stability. While default is 0, adjusting bias reduces input lag at the cost of occasional line tearing. <strong>Auto Bias</strong> (50% safe baseline) dynamically adjusts offsets.</p>
+        </div>
+
+        <img src="images/L0.png" alt="Latent Sync Example"> 
+        <img src="images/L50.png" alt="Latent Sync Example">  
+        <img src="images/L90.png" alt="Latent Sync Example">
+        <p style="text-align: center;"><em>Latency drop: 14 ms (0 Bias) -> 8 ms (50% Auto) -> 3 ms (90% Auto)</em></p>
+
+        <h3 id="tearing-off">2.3 Latent Sync + Allow Tearing OFF</h3>
+        <p>Disabling tearing with Latent Sync enabled provides guaranteed tear-free rendering with 1 frame latency, further tunable via Delay Bias. It essentially functions as <strong>"V-Sync on steroids."</strong></p>
+        <img src="images/Tearing.png" alt="Tearing Mode Settings">
+
+    </main>
+</div>
+
+<div id="imgModal" class="image-modal">
+    <span class="close-modal">&times;</span>
+    <img class="modal-content" id="zoomedImg">
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

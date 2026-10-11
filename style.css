@@ -524,3 +524,27 @@ blockquote {
 blockquote p {
     margin: 0; /* Убираем лишние отступы у параграфов внутри цитаты */
 }
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.lang-btn {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 8px 14px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.lang-btn:hover {
+    background: var(--accent-bg);
+    border-color: var(--accent);
+    color: var(--accent);
+}
