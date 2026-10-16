@@ -21,7 +21,8 @@
             <li><a href="#monitoring">Мониторинг Present mode</a></li>
             <li><a href="#check-mpo">Проверка MPO</a></li>
             <li><a href="#mpo-problems">Проблемы MPO и Composed Flip</a></li>
-            <li><a href="#interop"> OpenGL/Vulkan на DXGI (WIP)</a></li>
+            <li><a href="#interop">OpenGL и Vulkan: DXGI Interop</a></li>
+            <li><a href="#dx9-wrappers">Трансляторы DirectX 9</a></li>
             <li><a href="#sources">Источники и полезные ссылки</a></li>
         </ul>
     </aside>
@@ -391,9 +392,102 @@
 <p>Чтобы избежать режима composed:flip, обязательно устанавливайте (DL)DSR-разрешение в настройках Windows до запуска игры.</p> 
 
 
-<h2 id="interop">OpenGL/Vulkan на DXGI (WIP)</h2>
-<p>Нативно в Windows для Opengl и Vulkan игры есть два пути — Полноэкранный режим в FSE (Hardware:Lagacy flip) и Оконный режим в BitBlt (Copy: GPU GDI). То есть эти игры не работат на DXGI </p>
-<p>Для пе</p>
+<h2 id="interop">OpenGL и Vulkan: DXGI Interop</h2>
+<p>Нативно в Windows для OpenGL и Vulkan игр есть два пути — Полноэкранный режим в FSE (Hardware: Legacy Flip) и Оконный режим в BitBlt (Composed: Copy with GPU GDI). То есть эти игры не работают через подсистему DXGI напрямую.</p>
+
+<h3 id="nv-interop">Nvidia Driver Interop (Layered on DXGI Swapchain)</h3>
+<p>Для того чтоб перевести Vulkan или OpenGL игру зайдите в <strong>профиль игры</strong> в NVAPP/NVCP и выберите <strong>Vulkan/OpenGL Present Method: Prefer layered on DXGI Swapchain</strong>.</p>
+
+<img src="images/nvappdxgi.png" alt="Vulkan/OpenGL Present Method: Prefer layered on DXGI Swapchain в NVAPP">
+
+<div class="note">
+    <strong>Предупреждение:</strong> Не трогайте эту настройку в глобальном профиле (Global)! Включайте её строго в индивидуальном <strong>профиле конкретной игры</strong>.
+</div>
+
+<h3 id="sk-interop">Special K Interop (только для OpenGL)</h3>
+<p>Из-за того, что встроенный interop от Nvidia имеет очень большой оверхед для GPU в OpenGL (например, в Minecraft с тяжёлыми шейдерами просадка производительности может быть более чем в два раза), для OpenGL я советую использовать <strong>Special K</strong>.</p>
+
+<p>Всё, что вам нужно — это добавить исполняемый <code>.exe</code> игры в его лаунчер (SKIF) и запустить игру через него. Special K сам внедрится в неё и настроит DXGI Swapchain автоматически.</p>
+
+<p>Если SpecialK внедрился, в его панели управления вы увидите <strong>OpenGL-IK</strong>. Это означает, что работает именно interop от SpecialK.</p>
+
+<img src="images/SKOGL.png" alt="OpenGL-IK в панели управления Special K">
+
+<hr class="section-divider">
+
+<h2 id="dx9-wrappers">Трансляторы DirectX 9 (dgVoodoo2 и DXVK)</h2>
+<p>Для старых проектов на базе классического DirectX 9 нативная современная Flip-модель недоступна. Перевод на современный API позволяет задействовать DXGI SwapChain и получить преимущества оконного без рамок / полноэкранного режима.</p>
+
+<h3 id="dgvoodoo">dgVoodoo2</h3>
+<p><strong>dgVoodoo2</strong> — один из лучших трансляторов устаревших API (DirectDraw, Direct3D 1–9 и Glide) в современный <strong>Direct3D 11/12</strong>. С его помощью игра начинает работать через современный DXGI Swapchain, получая поддержку полноэкранного окна без рамок (Borderless), технологии Reflex и минимальную задержку ввода.</p>
+
+<ol>
+    <li><a href="https://dege.freeweb.hu/dgVoodoo2/dgVoodoo2/" target="_blank">Скачиваем архив dgVoodoo2</a> с официального сайта разработчика.</li>
+    
+    <br>
+    
+    <li>Распаковываем архив и копируем файл контрольной панели <code>dgVoodooCpl.exe</code> и файл настроек <code>dgVoodoo.conf</code> в корень игры (рядом с основным <code>.exe</code> файлом).</li>
+    
+    <br>
+    
+    <li>Определяем разрядность игры (подавляющее большинство старых игр на DirectX 9 — 32-битные, т.е. <strong>x86</strong>).
+        <ul class="custom-list">
+            <li>Заходим в папку <code>MS/x86/</code> внутри скачанного архива (или <code>MS/x64/</code>, если игра 64-битная).</li>
+            <li>Копируем библиотеку <code>D3D9.dll</code> (для игр на DirectX 9) или <code>D3D8.dll</code> (для DirectX 8) в корень игры рядом с <code>.exe</code> файлом.</li>
+        </ul>
+    </li>
+    
+    <br>
+    
+    <li>Заходим в игру и проверяем результат через <strong>RTSS</strong>:
+        <ul class="custom-list">
+            <li>В строке API вместо старого D3D9 будет отображаться <strong>D3D11</strong>.</li>
+            <li>Presentation Model переключится в <strong>Hardware: Independent Flip</strong>.</li>
+            <li>В правом нижнем углу экрана появится водяной знак (ватермарка) dgVoodoo — признак успешного перехвата рендера.</li>
+        </ul>
+    </li>
+    
+    <br>
+    
+    <li><strong>Как убрать ватермарку:</strong> открываем <code>dgVoodooCpl.exe</code> в папке с игрой, переходим на вкладку <strong>DirectX</strong>, снимаем галочку с пункта <strong>dgVoodoo Watermark</strong> и нажимаем <strong>Apply</strong>.</li>
+</ol>
+
+<h3 id="dxvk">DXVK (включая настройку через NPI для DXGI)</h3>
+<p><strong>DXVK</strong> транслирует вызовы DirectX 9 в современный Vulkan, снимая упор в один поток процессора. Чтобы вывод кадра работал через современный <strong>DXGI Flip Model</strong>, настраиваем драйвер Nvidia через NPI.</p>
+
+<ol>
+    <li><a href="https://github.com/doitsujin/dxvk/releases" target="_blank">Скачиваем архив DXVK</a> с GitHub.</li>
+    
+    <br>
+    
+    <li>Копируем <code>d3d9.dll</code> из папки <code>x32/</code> (или <code>x64/</code>) в корень игры рядом с <code>.exe</code> файлом.</li>
+    
+    <br>
+    
+    <li>Открываем <strong>Nvidia Profile Inspector (NPI)</strong>, находим профиль игры и в разделе <strong>Other</strong> выставляем два параметра:
+        <ul class="custom-list">
+            <li><strong>Vulkan/OpenGL present method:</strong> <code>0x00000001 (Prefer layered on DXGI Swapchain)</code></li>
+            <li><strong>Vulkan/OpenGL present method: Flags:</strong> <code>Treat DXVK as Native</code></li>
+        </ul>
+        Нажимаем <strong>Apply changes</strong>.
+    </li>
+    
+    <br>
+    
+    <li>Заходим в игру и проверяем в <strong>RTSS</strong>: API будет <strong>Vulkan</strong>, а Present Mode переключится в <strong>Hardware: Independent Flip</strong>.</li>
+</ol>
+
+<div class="note">
+    <p><strong>Что делать, если игра упорно игнорирует d3d9.dll:</strong></p>
+    <p>Некоторые игры жёстко загружают DirectX напрямую из <code>System32</code>, игнорируя файлы в собственной папке. Чтобы принудительно заставить Windows подгрузить локальный DXVK:</p>
+    <ol>
+        <li>Создайте в папке игры пустой файл с расширением <code>.local</code> (например, для <code>game.exe</code> создаём файл <code>game.exe.local</code>).</li>
+        <li>В реестре по пути:<br>
+            <code>HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\</code><br>
+            создайте подраздел с точным именем экзешника (например, <code>game.exe</code>).</li>
+        <li>Внутри создайте параметр <strong>DWORD (32 бита)</strong> с именем <code>DevOverrideEnable</code> и значением <code>1</code>.</li>
+    </ol>
+</div>
 
 <h2 id="sources">📚 Источники и полезные ссылки</h2>
         <ul class="custom-list">
