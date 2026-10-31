@@ -290,3 +290,37 @@ if (tocLinks.length > 0) {
         highlightMenu();
     }
 }
+
+// Section links remain usable when clipboard access is unavailable.
+const englishPage = document.documentElement.lang === 'en';
+const linkStatus = document.createElement('span');
+linkStatus.className = 'section-link-status';
+linkStatus.setAttribute('role', 'status');
+document.body.appendChild(linkStatus);
+let linkStatusTimer;
+document.querySelectorAll('.content h1[id], .content h2[id], .content h3[id]').forEach(heading => {
+    const title = heading.textContent.trim();
+    const link = document.createElement('a');
+    link.className = 'section-link';
+    link.href = `#${encodeURIComponent(heading.id)}`;
+    link.textContent = '#';
+    link.setAttribute('aria-label', `${englishPage ? 'Copy section link' : 'Скопировать ссылку на раздел'}: ${title}`);
+    link.title = englishPage ? 'Copy section link' : 'Скопировать ссылку на раздел';
+    link.addEventListener('click', async event => {
+        // On local files, copy the future public URL rather than a computer path.
+        const canonical = document.querySelector('link[rel="canonical"]');
+        const url = new URL(location.protocol === 'file:' && canonical ? canonical.href : location.href);
+        url.hash = heading.id;
+        if (!navigator.clipboard?.writeText) return;
+        event.preventDefault();
+        try {
+            await navigator.clipboard.writeText(url.href);
+            clearTimeout(linkStatusTimer);
+            linkStatus.textContent = englishPage ? 'Link copied' : 'Ссылка скопирована';
+            linkStatusTimer = setTimeout(() => { linkStatus.textContent = ''; }, 2500);
+        } catch {
+            location.hash = heading.id;
+        }
+    });
+    heading.appendChild(link);
+});

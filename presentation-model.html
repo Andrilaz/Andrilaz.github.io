@@ -5,13 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presentation Model | Гайд</title>
     <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Как кадр попадает на экран: DWM, DXGI, SwapChain, Independent Flip и MPO. Теория и проверка режима презентации в игре.">
+    <link rel="canonical" href="https://andrilaz.github.io/presentation-model">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Andrilaz">
+    <meta property="og:title" content="Presentation Model | Гайд">
+    <meta property="og:description" content="Как кадр попадает на экран: DWM, DXGI, SwapChain, Independent Flip и MPO. Теория и проверка режима презентации в игре.">
+    <meta property="og:url" content="https://andrilaz.github.io/presentation-model">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Presentation Model | Гайд">
+    <meta name="twitter:description" content="Как кадр попадает на экран: DWM, DXGI, SwapChain, Independent Flip и MPO. Теория и проверка режима презентации в игре.">
+    <link rel="alternate" hreflang="ru" href="https://andrilaz.github.io/presentation-model">
+    <link rel="alternate" hreflang="en" href="https://andrilaz.github.io/en/presentation-model">
 </head>
 <body>
 
 <div class="page-layout">
     
     <aside class="sidebar">
-        <a href="https://andrilaz.github.io/" class="nav-link">← На главную</a>
+        <a href="index.html" class="nav-link">← На главную</a>
         <h3>Содержание</h3>
         <ul class="toc-list">
             <li><a href="#PM">Presentation Model</a></li>
@@ -30,7 +42,10 @@
     <main class="content">
         <div class="header-top">
             <h1>Presentation Model в Windows</h1> 
+            <div class="header-controls">
+            <a href="en/presentation-model.html" class="lang-btn" lang="en" hreflang="en" aria-label="Читать эту страницу на английском">EN</a>
             <button id="theme-toggle" class="theme-btn">🌙</button>
+        </div>
         </div>
 
         <div class="article-meta">
@@ -44,14 +59,14 @@
 <div class="note">
     <ul>
         <li><strong class="term">DWM (Desktop Window Manager)</strong> – композитор рабочего стола Windows. Простыми словами: DWM берет картинки всех открытых окон, накладывает их друг на друга (композиция) и отправляет итоговый результат на вывод. Главный нюанс: DWM всегда работает с вертикальной синхронизацией, что добавляет как минимум один кадр задержки, если приложение проходит через него.</li>
-        <li><strong class="term">DXGI (DirectX Graphics Infrastructure)</strong> – это низкоуровневая подсистема, которая управляет перечислением адаптеров, созданием SwapChain и презентацией кадров. Начиная с <span class="v-api">DirectX 9Ex</span> и во всех последующих API (<span class="v-api">DirectX 10, 11 и 12</span>), именно DXGI отвечает за вывод изображения на экран. Исключением является только <span class="v-api">DirectX 9</span>, который использует собственную, старую презентации и не умеет работать с DXGI напрямую.</li>
+        <li><strong class="term">DXGI (DirectX Graphics Infrastructure)</strong> – это низкоуровневая подсистема, которая управляет перечислением адаптеров, созданием SwapChain и презентацией кадров. В <span class="v-api">DirectX 10, 11 и 12</span> именно DXGI отвечает за вывод изображения на экран. <span class="v-api">Direct3D 9 и 9Ex</span> используют собственный API презентации, а не DXGI.</li>
         <li><strong class="term">SwapChain (цепочка буферов)</strong> — это механизм, с помощью которого Direct3D приложение выстраивает последовательность отрисованных кадров для вывода на дисплей. Возможно, вы слышали о двойной или тройной буферизации, вертикальной синхронизации (V-Sync). Все это – свойства DXGI SwapChain, наряду с разрешением кадрового буфера, форматом, цветовым пространством.</li>
     </ul>
 </div>
         <h1 id="PM">Presentation Model</h1>
             <p>Это определение механизма (пути) передачи отрендеренных кадров игры на дисплей.</p>
            <p>В DXGI существует четыре различных swap-эффекта, которые игра может использовать для своей цепочки буферов: Discard (Flip), Sequential (Flip), Discard (BitBlt) и Sequential (BitBlt). Окончательный выбор сценария определяется используемым приложением SwapEffect и целым рядом оптимизаций.</p>
-        <img src="images/SE1.png" alt="Схема SwapEffect">
+        <img src="images/SE1.png" alt="Схема SwapEffect" width="1280" height="481" loading="lazy" decoding="async">
         <p>Звучит немного запутанно, но суть в следующем: игра может настраивать разные swap effects для своей цепочки буферов swapchain. Swap Effect определяет, как именно отрисованный кадр должен выводиться на экран с точки зрения самой игры. Однако реальная модель представления, которая будет использована по факту, зависит от множества факторов, а не только от выбранного эффекта.</p>
         
         <h2 id="History">История Presentation Model</h2>
@@ -61,13 +76,13 @@
         
         <p>Оконный режим был синонимом тормозов. Причина крылась в ограничениях модели BitBlt: вместо того чтобы попасть в DWM напрямую, игра использовала промежуточную поверхность для копирования кадра. Лишняя операция копирования – это лишняя нагрузка на видеопамять и заметная задержка, а еще плюсом сверху DWM добавлял кадр задержки композиции.</p>
         
-        <img src="images/win7.png" alt="Схема SwapEffect Windows 7">
+        <img src="images/win7.png" alt="Схема SwapEffect Windows 7" width="1280" height="720" loading="lazy" decoding="async">
         
         <p><strong class="term">FSE (Full-Screen Exclusive):</strong> В этом режиме игра брала управление выводом на себя, полностью обходя DWM. Композитор фактически переставал отрисовывать рабочий стол для этого монитора. Это давало максимальную скорость, но лишало возможности мгновенно сворачивать игру и использовать оконные оверлеи.</p>
         
         <h3 id="win8">Революция Windows 8</h3>
         <p>С обновлением Windows 8 появился <strong>Оконный Flip</strong>. Вместо копирования кадра (как в BitBlt), система и приложения теперь просто обмениваются ссылками на области в видеопамяти. Это убрало лишнюю операцию копирования, но задержка самой композиции DWM всё еще оставалась.</p>
-        <img src="images/win8.png" alt="Схема SwapEffect Windows 8">
+        <img src="images/win8.png" alt="Схема SwapEffect Windows 8" width="1280" height="720" loading="lazy" decoding="async">
         
         <h3 id="DFlip">Вершина оптимизации DirectFlip и iFlip</h3>
         <p>Итогом этих улучшений стала технология <strong>DirectFlip.</strong> Она позволяет DWM «отступить на шаг назад» и пропустить кадр игры напрямую к контроллеру дисплея, минуя этап общей композиции DWM.</p>
@@ -75,7 +90,7 @@
         <div class="note">
         * До Windows 10 даже после успешного прохождения DirectFlip и перехода в Independent Flip, игры не могли иметь разрывы как это было в FSE и были всегда под V-sync. Тиринг стал возможным благодаря True Immediate iFlip, который был добавлен в Windows 10.
      </div>
-            <img src="images/Dflip.png" alt="Схема Dflip">
+            <img src="images/Dflip.png" alt="Схема Dflip" width="1280" height="720" loading="lazy" decoding="async">
         <p>Для активации стандартных оптимизаций DirectFlip необходимо, чтобы swapchain игры <strong>соответствовал разрешению рабочего стола</strong> (покрывал всю область экрана) и над окном игры <strong>не располагались другие окна или оверлеи.</strong></p>
        
         <h3 id="Optimizations">Оптимизации Windows 10 и 11 для старых игр</h3>
@@ -83,14 +98,14 @@
         <p id="WOW">Вторая: <a href="https://devblogs.microsoft.com/directx/updates-in-graphics-and-gaming/#optimizations-for-windowed-games"> <strong>Optimizations for windowed games</strong> </a> —  функция, добавленна в Windows 11 22H2, которая переводит старые игры (DirectX 10-11 ), использующие <strong>оконный BitBlt</strong>, на современный <strong>оконный Flip</strong>. Это позволяет таким играм также воспользоваться всеми преимуществами independent flip. НЕ работает на D3D9</p>
         
        <p>Следовательно, в современной Windows 11 со всеми оптимизациями модель <strong>оконного Flip</strong> применяется ко всем играм, работающим через DXGI. И если игра находится в independent flip, то она получает наилучшую производительность.</p>
-        <img src="images/FSO.png" alt="FSO">
+        <img src="images/FSO.png" alt="FSO" width="1280" height="720" loading="lazy" decoding="async">
 
         <hr class="section-divider">
 
         <h3 id="MPO">Multi-Plane Overlay</h3>
         <p><strong>Multi-Plane Overlay (MPO)</strong> – подразумевает использование дополнительных выделенных аппаратных плоскостей сканирования в GPU, на которые могут подаваться кадры приложения, а видеокарта затем самостоятельно выводит их на дисплей, тем самым беря на себя работу композиции.</p>
         <p>Это позволяет играм обходить DWM в различных смешанных и оконных режимах, тем самым устраняя задержку отображения, которая в противном случае возникла бы. С MPO вам не обязательно соблюдать правила активации стандартного DirectFlip.</p>
-        <img src="images/mpo.png" alt="MPO">
+        <img src="images/mpo.png" alt="MPO" width="1280" height="720" loading="lazy" decoding="async">
         
         <div class="note"> 
         <p><strong>Минимальные требования по видеокартам:</strong></p>
@@ -108,7 +123,7 @@
         <p class="note">В схемах было сделано следующее упрощение: даже при включенной поддержке MPO на некоторых системах игра может по-прежнему отображаться как использующая «Hardware: Independent Flip», хотя в этом случае она, как правило, ведет себя и функционирует точно так же, как «Hardware Composed: Independent Flip».</p>
   
         <p><strong>Flip (D3D11/D3D12*)</strong></p>
-        <img src="images/Flip.png" alt="FlipPM">
+        <img src="images/Flip.png" alt="FlipPM" width="1999" height="753" loading="lazy" decoding="async">
         
         <p><strong>Цветные столбцы</strong> на графике обозначают <strong>последовательные этапы</strong>, которые подробно описаны в этом списке.</p>
 
@@ -132,7 +147,7 @@
 </ul>
   <hr class="section-divider">
   <p><strong>BitBlt (D3D11)</strong></p>
-        <img src="images/BitBlt.png" alt="BitBlt">
+        <img src="images/BitBlt.png" alt="BitBlt" width="1999" height="854" loading="lazy" decoding="async">
         
     <p>Для игры, использующей устаревший эффект <strong>BitBlt swap</strong>, выбор конкретной модели представления зависит от нескольких факторов:</p>
 
@@ -140,7 +155,7 @@
 
 <ul class="custom-list">
     <li><a href="#WindowMode"><strong>1. Запрошенный режим отображения игры</strong></a>.</li>
-    <li>2. Переключатель <strong>«Оптимизация во весь экран»</strong> <a href="FSO"><strong>(FSO)</strong></a> (актуально только для игр, запущенных в режиме эксклюзивного полноэкранного режима <a href="#"><strong>(FSE)</strong></a>).</li>
+    <li>2. Переключатель <strong>«Оптимизация во весь экран»</strong> <a href="#FSO"><strong>(FSO)</strong></a> (актуально только для игр, запущенных в режиме эксклюзивного полноэкранного режима <a href="#"><strong>(FSE)</strong></a>).</li>
     <li>Переключатель <a href="#WOW"><strong>«Оптимизация для оконных игр»</strong></a> (доступен в Windows 11 и актуален только для игр, работающих в одном из двух оконных режимов).</li>
     <li><strong> 3. Наличие поддержки многоплоскостного наложения <a href="#MPO">(MPO)</a> на аппаратном уровне.</strong></li>
     <li><strong>4. И, наконец, соответствие цепочки буферов (swapchain) и системы необходимым требованиям</strong> для активации оптимизации <a href="#DFlip"><strong>DirectFlip</strong></a>:
@@ -153,7 +168,7 @@
 </ul>
 
 <h3>В итоге</h3>
-<p>Все игры, работающие через DXGI (от DirectX 9Ex до DirectX 12), будут использовать Flip-модель презентации при условии, что у вас  Windows 11 и  включены  ВСЕ Оптимизации.</p>
+<p>Все игры, работающие через DXGI (от DirectX 10 до DirectX 12), будут использовать Flip-модель презентации при условии, что у вас  Windows 11 и  включены  ВСЕ Оптимизации.</p>
 <p><strong>При отсутствии аппаратной поддержки MPO</strong> — крайне важно следовать правилам для активации <a href="#DFlip">стандартного Direct Flip</a>.</p>
 <p><strong>Наличие MPO дает вам полную свободу.</strong> Можете устанавливать любое разрешение, изменять область Swapchain приложения и накладывать оверлеи, при этом приложение продолжит стабильно работать в режиме Independent Flip.</p>
 <p>Для старых проектов на базе классического DirectX 9 потребуется либо активация полноэкранного режима в сочетании с FSO, либо — что гораздо лучше — использование трансляторов DXVK или dgVoodoo2. Такой перевод на современный API позволит задействовать Flip-модель презентации и наслаждаться преимуществами оконного без рамок/полноэкранного режима вместо компромиссного FSO(eFSE).</p>
@@ -219,19 +234,19 @@
     <br>
     
     <li>Заходим в RTSS, нажимаем кнопку Setup:
-        <img src="images/rtss1.png" alt="Кнопка Setup в RTSS">
+        <img src="images/rtss1.png" alt="Кнопка Setup в RTSS" width="523" height="68" loading="lazy" decoding="async">
     </li>
     
     <li>Заходим на вкладку Plugins, ставим галочку на OverlayEditor и заходим в него, нажав два раза (или Setup снизу):
-        <img src="images/rtss2.png" alt="Вкладка Plugins в RTSS">
+        <img src="images/rtss2.png" alt="Вкладка Plugins в RTSS" width="422" height="156" loading="lazy" decoding="async">
     </li>
     
     <li>Далее Layouts -> load -> выбираем скачанный .ovl:
-        <img src="images/rtss3.png" alt="Загрузка файла ovl">
+        <img src="images/rtss3.png" alt="Загрузка файла ovl" width="800" height="422" loading="lazy" decoding="async">
     </li>
     
     <li>Закрываем OverlayEditor, нажимаем Apply и заходим в игру. 
-        <img src="images/rtss4.png" alt="Overlay">
+        <img src="images/rtss4.png" alt="Overlay" width="704" height="435" loading="lazy" decoding="async">
     </li>
 </ol>
 
@@ -254,11 +269,11 @@
 <p><strong>Reflex Sim-to-Render latency</strong> — Отражает временной интервал между началом Simulation до завершения кадра GPU.<br>
 Также Reflex маркеры дают подробную информацию про pipeline игры от Sim до завершения Gpu Render, но не видят, что происходит на этапе композиции (Composite).</p>
 
-<img src="images/pcl1.png" alt="Схема Reflex Sim-to-Render latency">
+<img src="images/pcl1.png" alt="Схема Reflex Sim-to-Render latency" width="1999" height="591" loading="lazy" decoding="async">
 
 <p><strong>Present-To-Display</strong> — это время между вызовом функции Present() и изменением буфера кадра (отправкой на монитор).</p>
 
-<img src="images/pcl2.png" alt="Схема Present-To-Display Latency">
+<img src="images/pcl2.png" alt="Схема Present-To-Display Latency" width="1999" height="283" loading="lazy" decoding="async">
     
 
 <h2 id="check-mpo">Проверка работы MPO</h2>
@@ -268,21 +283,27 @@
     <li>Смотрим работает ли MPO</li>
 </ol>
 
-<img src="images/skif1.png" alt="Проверка поддержки MPO в SpecialK">
+<img src="images/skif1.png" alt="Проверка поддержки MPO в SpecialK" width="982" height="280" loading="lazy" decoding="async">
 
 <p>SKIF сразу предложит вам сбросить настройки в реестре, если вы наслушались оптимизаторов 😊<br>
 Нажав ПКМ по области MPO, вы можете сделать рефреш в реалтайме.</p>
 
-<img src="images/skif2.png" alt="Контекстное меню MPO в SpecialK">
+<img src="images/skif2.png" alt="Контекстное меню MPO в SpecialK" width="204" height="120" loading="lazy" decoding="async">
 
 <h3>Проверка в игре</h3>
 
 <p>Используя RTSS оверлей, откройте xbox game bar (Win+G), если игра осталась в <strong>independent flip</strong> — значит MPO работает.</p>
 
-<img src="images/MPO.gif" alt="Игра без MPO (Game Bar)">
+<video controls loop muted playsinline preload="none" poster="images/MPO-poster.png" aria-label="Игра без MPO (Game Bar)">
+    <source src="images/MPO.mp4" type="video/mp4">
+    <a href="images/MPO.gif">Игра без MPO (Game Bar)</a>
+</video>
 <p style="text-align: center;"><strong>Без MPO</strong></p>
 
-<img src="images/NoMPO.gif" alt="Игра с MPO (Game Bar)">
+<video controls loop muted playsinline preload="none" poster="images/NoMPO-poster.png" aria-label="Игра с MPO (Game Bar)">
+    <source src="images/NoMPO.mp4" type="video/mp4">
+    <a href="images/NoMPO.gif">Игра с MPO (Game Bar)</a>
+</video>
 <p style="text-align: center;"><strong>С MPO</strong></p>
 
 <h2 id="mpo-problems">Проблемы MPO и Composed Flip</h2>
@@ -301,7 +322,7 @@
 
     <li><strong>Не трогайте вкладку Adjust Desktop Size and Position без надобности.</strong> Изменение тут может сломать работу MPO.
         <br>
-        <img src="images/nvcp1.png" alt="Настройки по умолчанию">
+        <img src="images/nvcp1.png" alt="Настройки по умолчанию" width="576" height="531" loading="lazy" decoding="async">
         <br><em>Настройки по умолчанию</em>
     </li>
 
@@ -317,18 +338,18 @@
 
     <li><strong>Не используйте NIS (Драйверный апскейлер).</strong> Включение его сразу ломает MPO по всей системе.
         <br>
-        <img src="images/nvcp2.png" alt="Настройки NIS">
+        <img src="images/nvcp2.png" alt="Настройки NIS" width="667" height="412" loading="lazy" decoding="async">
     </li>
 
     <br>
 
     <li><strong>Драйвер Nvidia назначает все MPO плейны только на 1 монитор</strong>, и ваш основной монитор может остаться без них.
         <br>
-        <img src="images/skif3.png" alt="MPO на нескольких мониторах">
+        <img src="images/skif3.png" alt="MPO на нескольких мониторах" width="392" height="100" loading="lazy" decoding="async">
         <br>
         Для того чтоб вернуть MPO на основной монитор, надо сделать его главным в NVCP/NVAPP ИЛИ передерануть на вотрой и обратно на основной
         <br>
-        <img src="images/nvcp3.png" alt="Сделать дисплей основным в NVCP">
+        <img src="images/nvcp3.png" alt="Сделать дисплей основным в NVCP" width="1223" height="1002" loading="lazy" decoding="async">
     </li>
 
     <br>
@@ -379,11 +400,11 @@
 
     <li><strong>Отключен Игровой Режим Windows и Xbox Gamebar.</strong> Они играют важную роль в активации Game mode плана электропитания, Optimizations for windowed games и Windows VRR .
         <br>
-        <img src="images/game1.png" alt="Windows Game Mode">
+        <img src="images/game1.png" alt="Windows Game Mode" width="1068" height="168" loading="lazy" decoding="async">
         <br>
         Если игра не распозналась, то в Xbox Gamebar можно это сделать принудительно.
         <br>
-        <img src="images/game2.png" alt="Xbox Gamebar Remember this is a game">
+        <img src="images/game2.png" alt="Xbox Gamebar Remember this is a game" width="332" height="626" loading="lazy" decoding="async">
     </li>
 </ul>
 
@@ -398,7 +419,7 @@
 <h3 id="nv-interop">Nvidia Driver Interop (Layered on DXGI Swapchain)</h3>
 <p>Для того чтоб перевести Vulkan или OpenGL игру зайдите в <strong>профиль игры</strong> в NVAPP/NVCP и выберите <strong>Vulkan/OpenGL Present Method: Prefer layered on DXGI Swapchain</strong>.</p>
 
-<img src="images/nvappdxgi.png" alt="Vulkan/OpenGL Present Method: Prefer layered on DXGI Swapchain в NVAPP">
+<img src="images/nvappdxgi.png" alt="Vulkan/OpenGL Present Method: Prefer layered on DXGI Swapchain в NVAPP" width="752" height="300" loading="lazy" decoding="async">
 
 <div class="note">
     <strong>Предупреждение:</strong> Не трогайте эту настройку в глобальном профиле (Global)! Включайте её строго в индивидуальном <strong>профиле конкретной игры</strong>.
@@ -411,7 +432,7 @@
 
 <p>Если SpecialK внедрился, в его панели управления вы увидите <strong>OpenGL-IK</strong>. Это означает, что работает именно interop от SpecialK.</p>
 
-<img src="images/SKOGL.png" alt="OpenGL-IK в панели управления Special K">
+<img src="images/SKOGL.png" alt="OpenGL-IK в панели управления Special K" width="860" height="170" loading="lazy" decoding="async">
 
 <hr class="section-divider">
 
@@ -453,7 +474,7 @@
 </ol>
 
 <h3 id="dxvk">DXVK (включая настройку через NPI для DXGI)</h3>
-<p><strong>DXVK</strong> транслирует вызовы DirectX 9 в современный Vulkan, снимая упор в один поток процессора. Чтобы вывод кадра работал через современный <strong>DXGI Flip Model</strong>, настраиваем драйвер Nvidia через NPI.</p>
+<p><strong>DXVK</strong> транслирует вызовы DirectX 9 в современный Vulkan. Чтобы вывод кадра работал через современный <strong>DXGI Flip Model</strong>, настраиваем драйвер Nvidia через NPI.</p>
 
 <ol>
     <li><a href="https://github.com/doitsujin/dxvk/releases" target="_blank">Скачиваем архив DXVK</a> с GitHub.</li>
@@ -464,12 +485,12 @@
     
     <br>
     
-    <li>Открываем <strong>Nvidia Profile Inspector (NPI)</strong>, находим профиль игры и в разделе <strong>02 - Sync and Refresh</strong> выставляем два параметра:
+    <li>Открываем <a href="https://github.com/Orbmu2k/nvidiaProfileInspector/releases" target="_blank"><strong>Nvidia Profile Inspector (NPI)</strong></a>, находим профиль игры и в разделе <strong>02 - Sync and Refresh</strong> выставляем два параметра:
         <ul class="custom-list">
             <li><strong>Vulkan/OpenGL present method:</strong> <code>0x00000001 (Prefer layered on DXGI Swapchain)</code></li>
             <li><strong>Vulkan/OpenGL present method: Flags:</strong> <code>Treat DXVK as Native</code></li>
         </ul>
-        <img src="images/NPIDXVK.png" alt="Настройки Vulkan/OpenGL present method в Nvidia Profile Inspector">
+        <img src="images/NPIDXVK.png" alt="Настройки Vulkan/OpenGL present method в Nvidia Profile Inspector" width="1018" height="110" loading="lazy" decoding="async">
         Нажимаем <strong>Apply changes</strong>.
     </li>
     
@@ -497,6 +518,7 @@
             <li><a href="https://youtu.be/E3wTajGZOsA?si=eqIk2Slkfg7SrZbm" target="_blank">DirectX 12: Presentation Modes In Windows 10</a></li>
             <li><a href="https://wiki.special-k.info/en/SwapChain" target="_blank">SwapChain Science | Special K - The Official Wiki</a></li>
             <li><a href="https://walbourn.github.io/care-and-feeding-of-modern-swap-chains-3/" target="_blank">The Care and Feeding of Modern Swap Chains (part 3) | Games for Windows and the DirectX SDK blog</a></li>
+            <li><a href="https://github.com/Orbmu2k/nvidiaProfileInspector/releases" target="_blank">Nvidia Profile Inspector Releases (GitHub)</a></li>
             </ul>
 
         <hr class="article-divider">

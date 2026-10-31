@@ -5,13 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fixed Refresh Rate | Гайд</title>
     <link rel="stylesheet" href="style.css">
+    <meta name="description" content="Плавность и задержка на мониторах без VRR: V-Sync, ограничение FPS и Special K Latent Sync.">
+    <link rel="canonical" href="https://andrilaz.github.io/fixed-refresh">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Andrilaz">
+    <meta property="og:title" content="Fixed Refresh Rate | Гайд">
+    <meta property="og:description" content="Плавность и задержка на мониторах без VRR: V-Sync, ограничение FPS и Special K Latent Sync.">
+    <meta property="og:url" content="https://andrilaz.github.io/fixed-refresh">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Fixed Refresh Rate | Гайд">
+    <meta name="twitter:description" content="Плавность и задержка на мониторах без VRR: V-Sync, ограничение FPS и Special K Latent Sync.">
+    <link rel="alternate" hreflang="ru" href="https://andrilaz.github.io/fixed-refresh">
+    <link rel="alternate" hreflang="en" href="https://andrilaz.github.io/en/fixed-refresh">
 </head>
 <body>
 
 <div class="page-layout">
     
     <aside class="sidebar">
-        <a href="https://andrilaz.github.io/" class="nav-link">← На главную</a>
+        <a href="index.html" class="nav-link">← На главную</a>
         <h3>Содержание</h3>
         <ul class="toc-list">
             <li><a href="#min-latency">Минимальная задержка</a></li>
@@ -26,7 +38,7 @@
         <div class="header-top">
             <h1>Fixed Refresh Rate Monitor</h1> 
         <div class="header-controls">
-        <a href="en/fixed-refresh.html" class="lang-btn">EN</a>
+        <a href="en/fixed-refresh.html" class="lang-btn" lang="en" hreflang="en" aria-label="Читать эту страницу на английском">EN</a>
         <button id="theme-toggle" class="theme-btn">🌙</button>
     </div>
 </div>
@@ -55,19 +67,19 @@
         <p>Значение лока должно строго <strong>соответствовать</strong> частоте обновления экрана (можно попробовать на 0.100 или 0.001 меньше) либо являться её <strong>целым делителем</strong> (например, Hz/2 или Hz/3). Установка произвольных ограничений провоцирует возникновение ошибок анимации (animation error).</p>
 
         <p style="text-align: center;"><strong>Пример:</strong></p>
-        <img src="images/Vsync2.png" alt="Сравнение задержки V-Sync без лока">
-        <img src="images/Vsync22.png" alt="Сравнение задержки V-Sync без лока">
+        <img src="images/Vsync2.png" alt="Сравнение задержки V-Sync без лока" width="651" height="181" loading="lazy" decoding="async">
+        <img src="images/Vsync22.png" alt="Сравнение задержки V-Sync без лока" width="918" height="210" loading="lazy" decoding="async">
         <p style="text-align: center;"><em>V-Sync БЕЗ лока (Высокая задержка)</em></p>
         
-        <img src="images/Vsync1.png" alt="Сравнение задержки V-Sync с локом">
-        <img src="images/Vsync11.png" alt="Сравнение задержки V-Sync с локом">
+        <img src="images/Vsync1.png" alt="Сравнение задержки V-Sync с локом" width="652" height="189" loading="lazy" decoding="async">
+        <img src="images/Vsync11.png" alt="Сравнение задержки V-Sync с локом" width="925" height="214" loading="lazy" decoding="async">
         <p style="text-align: center;"><em>V-Sync С локом (Низкая задержка)</em></p>
 
         <p>В RTSS нажатием ПКМ по полю <em>Framerate limit</em> можно быстро выбрать точное значение герцовки:</p>
-        <img src="images/RTSS.png" alt="Выбор герцовки в RTSS">
+        <img src="images/RTSS.png" alt="Выбор герцовки в RTSS" width="603" height="84" loading="lazy" decoding="async">
 
         <p>В SpecialK нажатием ПКМ по ползунку фрейм-лимитера можно выбрать значение по герцовке и её дробные значения:</p>
-        <img src="images/SK.png" alt="Выбор факторов герцовки в SpecialK">
+        <img src="images/SK.png" alt="Выбор факторов герцовки в SpecialK" width="1022" height="224" loading="lazy" decoding="async">
 
         <h3 id="latent-sync">2.2 SpecialK Latent Sync</h3>
         <p><strong>Latent Sync</strong> — это функция, обеспечивающая условное отсутствие разрывов изображения. Она предлагает такую же или даже меньшую задержку ввода, чем VRR.</p>
@@ -77,14 +89,14 @@
             <p><strong>Delay Bias:</strong> Этот параметр управляет балансом. Хотя по умолчанию значение равно 0, его можно настроить в пользу снижения задержки ввода, рискуя появлением периодических разрывов. <strong>Auto Bias</strong> — рекомендуемый режим, где SpecialK сам корректирует смещение (значение 50% обычно является безопасным).</p>
         </div>
 
-        <img src="images/L0.png" alt="Пример работы Latent Sync"> 
-        <img src="images/L50.png" alt="Пример работы Latent Sync">  
-        <img src="images/L90.png" alt="Пример работы Latent Sync">
+        <img src="images/L0.png" alt="Пример работы Latent Sync" width="1034" height="639" loading="lazy" decoding="async">
+        <img src="images/L50.png" alt="Пример работы Latent Sync" width="1033" height="647" loading="lazy" decoding="async">
+        <img src="images/L90.png" alt="Пример работы Latent Sync" width="1004" height="457" loading="lazy" decoding="async">
         <p style="text-align: center;"><em>Задержка 14 мс без Delay Bias -> 8 мс (50% Auto) -> 3 мс (90% Auto)</em></p>
 
         <h3 id="tearing-off">2.3 Latent Sync + Allow Tearing OFF</h3>
         <p>Выключение тиринга (схоже с включением V-Sync) при включенном Latent Sync дает гарантированную картинку без разрывов с минимальной задержкой в 1 кадр, которую можно дополнительно снизить через Delay Bias. Можно сказать, это <strong>"V-Sync на стероидах"</strong>.</p>
-        <img src="images/Tearing.png" alt="Настройка Tearing Mode">
+        <img src="images/Tearing.png" alt="Настройка Tearing Mode" width="509" height="555" loading="lazy" decoding="async">
 
     </main>
 </div>

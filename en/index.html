@@ -4,14 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Andrilaz Blog</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
+    <meta name="description" content="Andrilaz guides to Windows presentation models, VRR, smoothness and latency in games.">
+    <link rel="canonical" href="https://andrilaz.github.io/en/">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Andrilaz">
+    <meta property="og:title" content="Andrilaz Blog">
+    <meta property="og:description" content="Andrilaz guides to Windows presentation models, VRR, smoothness and latency in games.">
+    <meta property="og:url" content="https://andrilaz.github.io/en/">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Andrilaz Blog">
+    <meta name="twitter:description" content="Andrilaz guides to Windows presentation models, VRR, smoothness and latency in games.">
+    <link rel="alternate" hreflang="ru" href="https://andrilaz.github.io/">
+    <link rel="alternate" hreflang="en" href="https://andrilaz.github.io/en/">
 </head>
 <body>
 
 <div class="container">
     <div class="header-top">
         <h1>Guides by Andrilaz</h1>
-        <button id="theme-toggle" class="theme-btn">🌙</button>
+        <div class="header-controls">
+            <a href="../index.html" class="lang-btn" lang="ru" hreflang="ru" aria-label="Read this page in Russian">RU</a>
+            <button id="theme-toggle" class="theme-btn">🌙</button>
+        </div>
     </div>
     
     <p></p>
@@ -20,7 +35,7 @@
         <a href="presentation-model" class="article-card">
             <span class="tag">Windows DXGI</span>
             <h3>Presentation Model</h3>
-            <p>A detailed guide on mechanisms for presenting rendered game frames to the display (<strong>DWM, DXGI, SwapChain, MPO</strong>).</p>
+            <p>A detailed guide to the mechanisms that deliver rendered game frames to the display (<strong>DWM, DXGI, SwapChain, MPO</strong>).</p>
         </a>
         <a href="vrr" class="article-card">
             <span class="tag">Monitor</span>
@@ -30,18 +45,20 @@
         <a href="fixed-refresh" class="article-card">
             <span class="tag">Monitor</span>
             <h3>Fixed Refresh Rate</h3>
-            <p>Latency and smoothness optimization on regular monitors <strong>without VRR support</strong>.</p>
+            <p>Optimizing latency and smoothness on regular monitors <strong>without VRR support</strong>.</p>
         </a>
 
-        <a href="index.html" class="article-card">
+        <div class="article-card article-card-pending">
             <span class="tag">Work in progress</span>
             <h3>FPS Limiters</h3>
             <p>Main types and comparison of FPS limiters</p>
-        </a>
+        </div>
     </div>
 </div>
 
-<script src="script.js"></script>
+<p class="translation-note">This English translation was produced primarily using AI.</p>
+
+<script src="../script.js"></script>
 
 </body>
 </html>

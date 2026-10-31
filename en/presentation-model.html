@@ -4,32 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Presentation Model | Guide</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
+    <meta name="description" content="How frames reach the display: DWM, DXGI, swap chains, Independent Flip and MPO, with practical presentation mode checks.">
+    <link rel="canonical" href="https://andrilaz.github.io/en/presentation-model">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Andrilaz">
+    <meta property="og:title" content="Presentation Model | Guide">
+    <meta property="og:description" content="How frames reach the display: DWM, DXGI, swap chains, Independent Flip and MPO, with practical presentation mode checks.">
+    <meta property="og:url" content="https://andrilaz.github.io/en/presentation-model">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Presentation Model | Guide">
+    <meta name="twitter:description" content="How frames reach the display: DWM, DXGI, swap chains, Independent Flip and MPO, with practical presentation mode checks.">
+    <link rel="alternate" hreflang="ru" href="https://andrilaz.github.io/presentation-model">
+    <link rel="alternate" hreflang="en" href="https://andrilaz.github.io/en/presentation-model">
 </head>
 <body>
 
 <div class="page-layout">
-    
+
     <aside class="sidebar">
-        <a href="https://andrilaz.github.io/" class="nav-link">← Home</a>
-        <h3>Table of Contents</h3>
+        <a href="index.html" class="nav-link">← Home</a>
+        <h3>Contents</h3>
         <ul class="toc-list">
             <li><a href="#PM">Presentation Model</a></li>
             <li><a href="#History">History of Presentation Models</a></li>
             <li><a href="#MPO">MPO</a></li>
-            <li><a href="#PMp">Presentation Model in Practice</a></li>
+            <li><a href="#PMp">Presentation Models in Practice</a></li>
             <li><a href="#monitoring">Monitoring Present Mode</a></li>
             <li><a href="#check-mpo">Checking MPO</a></li>
-            <li><a href="#mpo-problems">MPO & Composed Flip Issues</a></li>
-            <li><a href="#interop">OpenGL/Vulkan on DXGI (WIP)</a></li>
-            <li><a href="#sources">Sources & Useful Links</a></li>
+            <li><a href="#mpo-problems">MPO and Composed Flip Problems</a></li>
+            <li><a href="#interop">OpenGL and Vulkan: DXGI Interop</a></li>
+            <li><a href="#dx9-wrappers">DirectX 9 Wrappers</a></li>
+            <li><a href="#sources">Sources and Useful Links</a></li>
         </ul>
     </aside>
 
     <main class="content">
         <div class="header-top">
-            <h1>Presentation Model in Windows</h1> 
+            <h1>Presentation Models in Windows</h1>
+            <div class="header-controls">
+            <a href="../presentation-model.html" class="lang-btn" lang="ru" hreflang="ru" aria-label="Read this page in Russian">RU</a>
             <button id="theme-toggle" class="theme-btn">🌙</button>
+        </div>
         </div>
 
         <div class="article-meta">
@@ -37,126 +53,125 @@
             <span class="meta-divider">•</span>
         </div>
 
-       <h3 id="terms">Reference & Key Terms</h3>
-<p>To understand the material, it is important to grasp these basic concepts:</p>
+       <h3 id="terms">Reference and Basic Terms</h3>
+<p>To understand this material, it is important to grasp the basic concepts:</p>
 
 <div class="note">
     <ul>
-        <li><strong class="term">DWM (Desktop Window Manager)</strong> – The Windows desktop compositor. In simple terms: DWM takes frame images from all open windows, layers them on top of each other (composition), and sends the final result to the display output. Key detail: DWM always operates with vertical synchronization, adding at least one frame of latency if an application passes through it.</li>
-        <li><strong class="term">DXGI (DirectX Graphics Infrastructure)</strong> – A low-level subsystem that manages adapter enumeration, SwapChain creation, and frame presentation. Starting from <span class="v-api">DirectX 9Ex</span> and across all subsequent APIs (<span class="v-api">DirectX 10, 11, and 12</span>), DXGI is responsible for outputting images to the screen. The only exception is <span class="v-api">DirectX 9</span>, which uses its own legacy presentation model and cannot interact with DXGI directly.</li>
-        <li><strong class="term">SwapChain (Buffer Chain)</strong> — A mechanism used by Direct3D applications to arrange a sequence of rendered frames for display output. You may have heard of double or triple buffering and V-Sync. All of these are properties of the DXGI SwapChain, along with swap buffer resolution, format, and color space.</li>
+        <li><strong class="term">DWM (Desktop Window Manager)</strong> – the Windows desktop compositor. Put simply, DWM takes the images of all open windows, layers them over one another (composition), and sends the final result to the display. The key detail: DWM always uses vertical synchronization, which adds at least one frame of latency if the application goes through it.</li>
+        <li><strong class="term">DXGI (DirectX Graphics Infrastructure)</strong> – a low-level subsystem that handles adapter enumeration, SwapChain creation, and frame presentation. In <span class="v-api">DirectX 10, 11, and 12</span>, DXGI is responsible for displaying the image on screen. <span class="v-api">Direct3D 9 and 9Ex</span> use their own presentation API rather than DXGI.</li>
+        <li><strong class="term">SwapChain (a chain of buffers)</strong> — the mechanism a Direct3D application uses to arrange rendered frames in sequence for display. You may have heard of double or triple buffering and vertical synchronization (V-Sync). These are all properties of a DXGI SwapChain, along with framebuffer resolution, format, and color space.</li>
     </ul>
 </div>
         <h1 id="PM">Presentation Model</h1>
-            <p>This defines the mechanism (pathway) through which rendered game frames are delivered to the display.</p>
-           <p>In DXGI, four distinct swap effects exist that a game can use for its swap chain: Discard (Flip), Sequential (Flip), Discard (BitBlt), and Sequential (BitBlt). The final presentation scenario is determined by the application's SwapEffect alongside system-level optimizations.</p>
-        <img src="images/SE1.png" alt="SwapEffect Diagram">
-        <p>It sounds slightly complicated, but here is the core idea: a game configures swap effects for its swapchain. The Swap Effect dictates how a rendered frame should be output from the game's perspective. However, the actual presentation model utilized in practice depends on multiple factors beyond the requested effect alone.</p>
-        
+            <p>This describes the mechanism (path) used to deliver rendered game frames to the display.</p>
+           <p>DXGI provides four different swap effects that a game can use for its swapchain: Discard (Flip), Sequential (Flip), Discard (BitBlt), and Sequential (BitBlt). The final presentation path depends on the application's SwapEffect and a range of optimizations.</p>
+        <img src="../images/SE1.png" alt="SwapEffect diagram" width="1280" height="481" loading="lazy" decoding="async">
+        <p>This sounds a little confusing, but the idea is simple: a game can configure different swap effects for its swapchain. The Swap Effect determines how a rendered frame should be displayed from the game's perspective. However, the presentation model actually used depends on many factors, not just the selected effect.</p>
+
         <h2 id="History">History of Presentation Models</h2>
         <h3 id="win7">Windows 7</h3>
 
-        <p>In the Windows 7 era, the main presentation methods were <strong>Windowed BitBlt</strong> and <strong>Fullscreen Flipping.</strong> For years, gamers lived by a golden rule: if you want minimal input lag and maximum smoothness, play exclusively in "Exclusive Fullscreen" (FSE).</p>
-        
-        <p>Windowed mode was synonymous with high latency. The reason lay in BitBlt limitations: instead of reaching DWM directly, the game copied frames to an intermediate surface. This extra copy operation caused unnecessary VRAM overhead and noticeable latency, while DWM added another frame of composition lag on top.</p>
-        
-        <img src="images/win7.png" alt="Windows 7 SwapEffect Diagram">
-        
-        <p><strong class="term">FSE (Full-Screen Exclusive):</strong> In this mode, the game took direct control of display output, completely bypassing DWM. The compositor effectively stopped rendering the desktop for that monitor. This delivered maximum performance, but removed the ability to alt-tab instantly or render windowed overlays.</p>
-        
+        <p>In the Windows 7 era, the main methods were <strong>windowed BitBlt</strong> and <strong>fullscreen Flipping.</strong> For years, gamers followed a golden rule: if you want minimal input lag and smooth gameplay, use Full-Screen Exclusive mode.</p>
+
+        <p>Windowed mode was synonymous with poor performance. The reason lay in the limitations of the BitBlt model: instead of going directly to DWM, the game used an intermediate surface to copy the frame. This extra copy operation meant additional video memory load and noticeable latency, with DWM adding another frame of composition latency on top.</p>
+
+        <img src="../images/win7.png" alt="Windows 7 SwapEffect diagram" width="1280" height="720" loading="lazy" decoding="async">
+
+        <p><strong class="term">FSE (Full-Screen Exclusive):</strong> In this mode, the game took control of display output, bypassing DWM entirely. The compositor effectively stopped rendering the desktop for that monitor. This delivered maximum speed, but prevented instant minimization and the use of windowed overlays.</p>
+
         <h3 id="win8">The Windows 8 Revolution</h3>
-        <p>Windows 8 introduced <strong>Windowed Flip</strong>. Instead of copying frames (as in BitBlt), the system and applications began swapping references to memory locations in VRAM. This eliminated the extra copy operation, though DWM composition latency remained present.</p>
-        <img src="images/win8.png" alt="Windows 8 SwapEffect Diagram">
-        
-        <h3 id="DFlip">The Peak of Optimization: DirectFlip & iFlip</h3>
-        <p>These improvements culminated in <strong>DirectFlip.</strong> It allows DWM to step back and pass game frames directly to the display controller, bypassing DWM composition entirely.</p>
-        <p>Upon successful DirectFlip activation, the application transitions to Independent Flip (iFlip Immediate*). While formally remaining in windowed mode, responsiveness and performance become fully comparable to classic full-screen access (FSE).</p>
+        <p>Windows 8 introduced <strong>windowed Flip</strong>. Instead of copying the frame as in BitBlt, the system and applications now simply exchange references to regions of video memory. This removed the extra copy operation, but DWM composition latency remained.</p>
+        <img src="../images/win8.png" alt="Windows 8 SwapEffect diagram" width="1280" height="720" loading="lazy" decoding="async">
+
+        <h3 id="DFlip">The Peak of Optimization: DirectFlip and iFlip</h3>
+        <p>These improvements culminated in <strong>DirectFlip.</strong> It lets DWM take a step back and pass the game's frame directly to the display controller, bypassing the overall DWM composition stage.</p>
+        <p>When DirectFlip is successfully activated, the program switches to Independent Flip mode (iFlip Immediate*). Technically, it remains windowed, but its performance and responsiveness are comparable to traditional Full-Screen Exclusive mode (FSE).</p>
         <div class="note">
-        * Prior to Windows 10, even after transitioning to Independent Flip via DirectFlip, games could not tear like in FSE and remained tied to V-Sync. Screen tearing became possible thanks to True Immediate iFlip introduced in Windows 10.
+        * Before Windows 10, even after successfully qualifying for DirectFlip and switching to Independent Flip, games could not tear as they could in FSE and were always under V-Sync. Tearing became possible with True Immediate iFlip, introduced in Windows 10.
      </div>
-            <img src="images/Dflip.png" alt="DirectFlip Diagram">
-        <p>To trigger standard DirectFlip optimizations, the game's swapchain must <strong>match the desktop resolution</strong> (covering the entire screen area) and <strong>no other windows or overlays</strong> may sit on top of the game window.</p>
-       
-        <h3 id="Optimizations">Windows 10 and 11 Optimizations for Legacy Games</h3>
-        <p id="FSO">First: <a href="https://devblogs.microsoft.com/directx/demystifying-full-screen-optimizations/"><strong>FSO (Full-Screen Optimizations)</strong></a> — a feature added in Windows 10 that performs a key role: it <strong>promotes any game using Fullscreen Exclusive Flipping (FSE) into Windowed Flip.</strong> This transformation allows games to leverage all benefits of independent flip. A key aspect of FSO is full-screen emulation (eFSE), achieved by dynamically altering desktop resolution and refresh rate to meet game requirements. It can also convert legacy D3D9 Fullscreen applications.</p>
-        <p id="WOW">Second: <a href="https://devblogs.microsoft.com/directx/updates-in-graphics-and-gaming/#optimizations-for-windowed-games"> <strong>Optimizations for windowed games</strong> </a> — introduced in Windows 11 22H2, converting legacy games (DirectX 10-11) running in <strong>Windowed BitBlt</strong> to modern <strong>Windowed Flip</strong>. This allows older windowed games to benefit from independent flip features. Does NOT apply to D3D9.</p>
-        
-       <p>Consequently, in modern Windows 11 with all optimizations active, the <strong>Windowed Flip</strong> model applies to all games running via DXGI. When running under Independent Flip, games achieve optimal latency and performance.</p>
-        <img src="images/FSO.png" alt="FSO">
+            <img src="../images/Dflip.png" alt="DirectFlip diagram" width="1280" height="720" loading="lazy" decoding="async">
+        <p>To activate standard DirectFlip optimizations, the game's swapchain must <strong>match the desktop resolution</strong> (cover the entire screen), and <strong>no other windows or overlays may appear over the game window.</strong></p>
+
+        <h3 id="Optimizations">Windows 10 and 11 Optimizations for Older Games</h3>
+        <p id="FSO">The first is: <a href="https://devblogs.microsoft.com/directx/demystifying-full-screen-optimizations/"><strong>FSO (Full-Screen Optimization)</strong></a> — a feature added in Windows 10 that performs a very important task for the user: it <strong>converts any game using Full-Screen Exclusive Flipping (FSE) to windowed Flip.</strong> This conversion enables all the benefits of Independent Flip. A key feature of FSO is fullscreen emulation (eFSE), achieved by changing the system's display resolution and refresh rate to match the running game's requirements. It can also convert legacy D3D9 Fullscreen.</p>
+        <p id="WOW">The second is: <a href="https://devblogs.microsoft.com/directx/updates-in-graphics-and-gaming/#optimizations-for-windowed-games"> <strong>Optimizations for windowed games</strong> </a> — a feature added in Windows 11 22H2 that converts older games (DirectX 10–11) using <strong>windowed BitBlt</strong> to modern <strong>windowed Flip</strong>. This lets those games benefit from Independent Flip as well. It does NOT work with D3D9.</p>
+
+       <p>Consequently, on modern Windows 11 with all optimizations enabled, the <strong>windowed Flip</strong> model applies to all games running through DXGI. A game in Independent Flip gets the best performance.</p>
+        <img src="../images/FSO.png" alt="FSO" width="1280" height="720" loading="lazy" decoding="async">
 
         <hr class="section-divider">
 
         <h3 id="MPO">Multi-Plane Overlay</h3>
-        <p><strong>Multi-Plane Overlay (MPO)</strong> refers to dedicated hardware display planes in the GPU. Application frames can be fed directly to these hardware planes, allowing the graphics card to compose and display them natively.</p>
-        <p>This allows games to bypass DWM across various borderless and windowed scenarios, eliminating composition display latency. With MPO active, strict DirectFlip criteria do not strictly need to be satisfied.</p>
-        <img src="images/mpo.png" alt="MPO">
-        
-        <div class="note"> 
-        <p><strong>Minimum GPU Requirements:</strong></p>
+        <p><strong>Multi-Plane Overlay (MPO)</strong> – uses additional dedicated hardware scanout planes in the GPU that can receive application frames. The graphics card then outputs them to the display itself, taking over the composition work.</p>
+        <p>This lets games bypass DWM in various mixed and windowed modes, eliminating the display latency that would otherwise occur. With MPO, you do not have to follow the rules for activating standard DirectFlip.</p>
+        <img src="../images/mpo.png" alt="MPO" width="1280" height="720" loading="lazy" decoding="async">
+
+        <div class="note">
+        <p><strong>Minimum graphics card requirements:</strong></p>
         <ul>
             <li> AMD: Radeon RX Vega (GCN 5.0) </li>
             <li> Intel: HD Graphics 510-515 (Core 6th gen) </li>
             <li> Nvidia: GTX 16/RTX 20 series (Turing) </li>
         </ul>
-        <p>Hardware support also depends on specific display and GPU configurations. Custom driver parameters or unusual display configurations can disable MPO support (e.g., driver-level GPU spatial scaling like NIS/RSR/Integer Scaling). We cover this further in the MPO and Composed:Flip troubleshooting section.</p>
+        <p>Support also depends on the GPU and display configuration. Unusual driver or display settings can disable MPO support, such as custom GPU scaling (NIS/RSR/integer scaling, etc.). We will cover this separately in the section on MPO and Composed: Flip problems.</p>
         </div>
         <hr class="section-divider">
-        
-        <h2 id="PMp">Presentation Model in Practice</h2>
-        <p>Now that optimizations have been detailed, let us revisit practical <strong>Presentation Model</strong> evaluation scenarios.</p>
-        <p class="note">Note on diagrams: even with MPO supported on certain systems, a game may still report as "Hardware: Independent Flip". In practice, its behavior and functionality are identical to "Hardware Composed: Independent Flip".</p>
-  
-        <p><strong>Flip (D3D11/D3D12*)</strong></p>
-        <img src="images/Flip.png" alt="FlipPM">
-        
-        <p><strong>Colored columns</strong> in the diagram denote <strong>sequential steps</strong> outlined in detail below.</p>
 
-        <p>For games using the Flip swap effect, the specific presentation model selection depends on several factors:</p>
+        <h2 id="PMp">Presentation Models in Practice</h2>
+        <p>Now that we have covered all the optimizations, let us return to analyzing the different scenarios of <strong>Presentation Model</strong>.</p>
+        <p class="note">The diagrams use the following simplification: even with MPO support enabled, on some systems a game may still be reported as using “Hardware: Independent Flip”, although in this case it generally behaves and functions exactly like “Hardware Composed: Independent Flip”.</p>
+
+        <p><strong>Flip (D3D11/D3D12*)</strong></p>
+        <img src="../images/Flip.png" alt="FlipPM" width="1999" height="753" loading="lazy" decoding="async">
+
+        <p><strong>The colored columns</strong> in the chart represent <strong>successive stages</strong>, described in detail in this list.</p>
+
+        <p>For a game using the Flip swap effect, the specific presentation model depends on several factors:</p>
 
         <ul class="custom-list">
-            <li>1. <a href="#WindowMode">Requested Display Mode.</a>
+            <li>1. <a href="#WindowMode">The display mode requested by the game.</a>
             <ul>
-            <li><strong>(*) The section regarding "Exclusive Fullscreen" (FSE)</strong> does not apply to <strong>DirectX 12</strong> games, as their "exclusive mode" is purely emulated (eFSE). In this mode, the Windows desktop temporarily changes resolution, refresh rate, and color space to match the game's request, but otherwise functions identically to borderless windowed mode.</li>
+            <li><strong>(*) The section on Full-Screen Exclusive mode (FSE)</strong> does not apply to games using <strong>DirectX 12</strong>, because their “exclusive mode” is only emulated (eFSE). In this mode, the Windows desktop temporarily changes its resolution, refresh rate, and color space to those requested by the game, but otherwise it works exactly like ordinary borderless fullscreen.</li>
             </ul>
                 </li>
-                <li>2. <strong>"Full-Screen Optimizations"</strong> toggle <a href="#FSO">(FSO)</a> (only relevant for games launched in Exclusive Fullscreen mode <a href="#">(FSE)</a>).</li>
-                <li><strong>3. Hardware-level Multi-Plane Overlay <a href="#MPO">(MPO)</a> support.</strong></li>
-                <li><strong>4. Swapchain and system compliance</strong> with requirements for activating <a href="#DFlip">DirectFlip</a>:
+                <li>2. The <strong>Full-Screen Optimizations</strong> <a href="#FSO">(FSO)</a> toggle (relevant only to games running in Full-Screen Exclusive mode <a href="#">(FSE)</a>).</li>
+                <li><strong>3. Hardware support for Multi-Plane Overlay <a href="#MPO">(MPO)</a>.</strong></li>
+                <li><strong>4. Finally, whether the swapchain and system meet the requirements</strong> for activating <a href="#DFlip">DirectFlip</a>:
             <ul>
-                <li><strong>DirectFlip:</strong> Your swapchain buffers match screen dimensions and the window client area covers the entire screen. Application swapchain buffers are used directly for display output instead of DWM buffers.</li>
-                <li><strong>DirectFlip with panel fitters (MPO required):</strong> The window client area covers the screen, and swapchain buffer dimensions fall within specific hardware scaling ratios (e.g., 0.25x to 4x) relative to the screen. GPU hardware scaling handles buffer display output.</li>
-             <li><strong>DirectFlip with Multi-Plane Overlay (MPO required):</strong> Swapchain buffers fall within specific hardware scaling ratios relative to window dimensions. DWM reserves a hardware scan plane for the application, which is then output and stretched to a screen sub-region with alpha blending if needed.</li>
+                <li><strong>DirectFlip:</strong> Your swapchain buffers match the screen dimensions, and the window's client area covers the entire screen. The application's own swapchain is used for display output instead of DWM's swapchain.</li>
+                <li><strong>DirectFlip with panel fitters (requires MPO):</strong> The window's client area covers the screen, and the swapchain buffer dimensions are within a hardware-dependent scaling factor (for example, from 0.25x to 4x) of the screen dimensions. The GPU scales the buffer as it is sent to the display.</li>
+             <li><strong>DirectFlip with Multi-Plane Overlay (requires MPO):</strong> Your swapchain buffers are within a hardware-dependent scaling factor of the window dimensions. DWM reserves a dedicated hardware scanout plane for your application, which is then displayed and, if necessary, stretched onto a subregion of the screen with alpha blending.</li>
         </ul>
     </li>
 </ul>
   <hr class="section-divider">
   <p><strong>BitBlt (D3D11)</strong></p>
-        <img src="images/BitBlt.png" alt="BitBlt">
-        
-    <p>For games using legacy <strong>BitBlt swap</strong> effects, presentation model selection relies on the following factors:</p>
+        <img src="../images/BitBlt.png" alt="BitBlt" width="1999" height="854" loading="lazy" decoding="async">
 
-<p><strong>Colored columns</strong> in the diagram denote <strong>sequential steps</strong> described below.</p>
+    <p>For a game using the legacy <strong>BitBlt swap</strong> effect, the specific presentation model depends on several factors:</p>
+
+<p><strong>The colored columns</strong> in the chart represent <strong>successive stages</strong>, described in detail in this list.</p>
 
 <ul class="custom-list">
-    <li><a href="#WindowMode"><strong>1. Requested Display Mode</strong></a>.</li>
-    <li>2. <strong>"Full-Screen Optimizations"</strong> toggle <a href="FSO"><strong>(FSO)</strong></a> (applies only to games running in Exclusive Fullscreen mode <a href="#"><strong>(FSE)</strong></a>).</li>
-    <li><a href="#WOW"><strong>"Optimizations for windowed games"</strong></a> toggle (available in Windows 11; applies only to games running in windowed modes).</li>
-    <li><strong>3. Hardware-level Multi-Plane Overlay <a href="#MPO">(MPO)</a> support.</strong></li>
-    <li><strong>4. Swapchain and system compliance</strong> with requirements for activating <a href="#DFlip"><strong>DirectFlip</strong></a>:
+    <li><a href="#WindowMode"><strong>1. The display mode requested by the game</strong></a>.</li>
+    <li>2. The <strong>Full-Screen Optimizations</strong> <a href="#FSO"><strong>(FSO)</strong></a> toggle (relevant only to games running in Full-Screen Exclusive mode <a href="#"><strong>(FSE)</strong></a>).</li>
+    <li>The <a href="#WOW"><strong>Optimizations for windowed games</strong></a> toggle (available in Windows 11 and relevant only to games running in one of the two windowed modes).</li>
+    <li><strong> 3. Hardware support for Multi-Plane Overlay <a href="#MPO">(MPO)</a>.</strong></li>
+    <li><strong>4. Finally, whether the swapchain and system meet the requirements</strong> for activating <a href="#DFlip"><strong>DirectFlip</strong></a>:
         <ul>
-            <li><strong>DirectFlip (Requires FSO or Windowed Optimizations):</strong> Game swapchain matches screen dimensions, and window client area covers the full display. The <strong>application swapchain</strong> handles display output directly.</li>
-            <li><strong>DirectFlip with panel fitters (Requires MPO + FSO/Windowed Optimizations):</strong> Window client area covers the screen, and swapchain buffer dimensions fall within hardware scaling bounds relative to the screen. GPU scanout hardware handles scaling upon output.</li>
-            <li><strong>DirectFlip with Multi-Plane Overlay (Requires MPO + FSO/Windowed Optimizations):</strong> Swapchain buffers fall within hardware scaling bounds relative to window size. DWM reserves a dedicated hardware plane for the application to output and scale directly.</li>
+            <li><strong>DirectFlip (requires FSO or windowed game optimizations):</strong> The game's swapchain matches the screen dimensions, and the window's client area covers the entire screen. Instead of using DWM for display output, <strong>the application's own SwapChain is used</strong>.</li>
+            <li><strong>DirectFlip with panel fitters (requires MPO + FSO/windowed game optimizations):</strong> The window's client area covers the screen, and the swapchain buffer dimensions are within a hardware-dependent scaling factor (for example, from 0.25x to 4x) of the screen dimensions. The GPU's scanout hardware scales the buffer as it is sent to the display.</li>
+            <li><strong>DirectFlip with Multi-Plane Overlay (requires MPO + FSO/windowed game optimizations):</strong> Your swapchain buffers are within a hardware-dependent scaling factor of the window dimensions. DWM reserves a dedicated hardware scanout plane for your application, which is then displayed and, if necessary, stretched onto a subregion of the screen with alpha blending.</li>
         </ul>
     </li>
 </ul>
 
-<h3>Summary</h3>
-<p>All games running via DXGI (DirectX 9Ex through DirectX 12) use the Flip presentation model in Windows 11 provided all system optimizations remain active.</p>
-<p><strong>Without hardware MPO support</strong> — following rules to trigger <a href="#DFlip">standard Direct Flip</a> is crucial for minimal latency.</p>
-<p><strong>MPO support grants complete flexibility.</strong> You can run non-native resolutions, scale application swapchains, and render overlays while keeping the application stably running under Independent Flip.</p>
-<p>For legacy DirectX 9 titles, either run full-screen combined with FSO or—preferably—use API wrappers like DXVK or dgVoodoo2. Translating legacy calls to modern APIs enables modern Flip presentation, giving you borderless windowed/fullscreen benefits without FSO/eFSE compromises.</p>
-
+<h3>The Result</h3>
+<p>All games running through DXGI (from DirectX 10 to DirectX 12) will use the Flip presentation model, provided you have Windows 11 and ALL optimizations enabled.</p>
+<p><strong>Without hardware MPO support</strong>, it is essential to follow the rules for activating <a href="#DFlip">standard DirectFlip</a>.</p>
+<p><strong>MPO gives you complete freedom.</strong> You can select any resolution, resize the application's swapchain area, and display overlays, while the application continues to run reliably in Independent Flip mode.</p>
+<p>Older games based on classic DirectX 9 require either fullscreen mode with FSO or, much preferably, a wrapper such as DXVK or dgVoodoo2. Moving to a modern API enables the Flip presentation model and the benefits of borderless windowed/fullscreen mode instead of the compromise of FSO (eFSE).</p>
 <table class="custom-table">
     <thead>
         <tr>
@@ -167,23 +182,23 @@
     <tbody>
         <tr class="row-green">
             <td>Hardware: Independent Flip</td>
-            <td>Indicates the application uses the Flip model, does not hold exclusive display ownership, but directly flips displayed surfaces every frame while bypassing extra DWM composition steps.</td>
+            <td>The application uses the Flip model and does not own the screen exclusively, but still flips the displayed surface directly every frame, bypassing the extra DWM stage.</td>
         </tr>
         <tr class="row-green">
             <td><a href="#">Hardware Composed:<br>Independent Flip*</a></td>
-            <td>Indicates the application uses the Flip model and is allocated a hardware overlay plane, bypassing DWM composition steps.</td>
+            <td>The application uses the Flip model and has been assigned a hardware overlay plane, bypassing the extra DWM stage.</td>
         </tr>
         <tr class="row-yellow">
             <td>Hardware: Legacy Flip</td>
-            <td>Indicates the application has taken direct full-screen display control (Exclusive Fullscreen) and flips displayed surfaces every frame.</td>
+            <td>The application has taken full control of the screen (Full-Screen Exclusive mode) and flips the displayed surface every frame.</td>
         </tr>
         <tr class="row-red">
             <td>Composed: Flip</td>
-            <td>Indicates the application runs in windowed mode using the Flip model, passing surfaces to DWM for composition (incurring 1+ frame latency minimum).</td>
+            <td>The application runs in windowed mode, uses the Flip model, and passes its surfaces to DWM for subsequent composition (1+ frames of latency in any case).</td>
         </tr>
         <tr class="row-red">
             <td>Composed: Copy with GPU GDI</td>
-            <td>Indicates the application runs in windowed mode using BitBlt (incurring 1+ frame latency minimum).</td>
+            <td>The application runs in windowed mode and uses BitBlt (1+ frames of latency in any case).</td>
         </tr>
     </tbody>
 </table>
@@ -191,52 +206,52 @@
 
 <h3 id="WindowMode">Window Modes in Modern Games</h3>
 
-<p>Games do not always label window modes accurately, but here are key characteristics to identify which mode is active:</p>
+<p>Games do not always label these correctly, but here are the characteristics that let you identify the mode in use:</p>
 
 <ol>
-    <li>Emulated Fullscreen <strong>Exclusive (DX12) / Games via FSO</strong> — The game runs in Windowed Flip while the desktop temporarily changes resolution, refresh rate, and color space to match requested settings. <strong>Useful without MPO</strong> if you want to play below native resolution. Developers rarely include this option now as <strong>it is inferior to regular windowed modes.</strong></li>
+    <li>Emulated Fullscreen <strong>Exclusive (DX12) / a game running through FSO</strong> — the game uses windowed Flip, with the Windows desktop simply changing its resolution, refresh rate, and color space temporarily to those requested by the game. <strong>Useful if you have no MPO</strong> and want to play at a lower resolution than the desktop. Developers increasingly omit this mode from the settings because <strong>it is inferior to ordinary windowed mode.</strong></li>
     <br>
-    <li><strong>Fullscreen Windowed (Borderless)</strong> — Game window scales to match system resolution. <strong>Best option</strong> for native resolution, or non-native if stretched scaling is desired (MPO required for non-native scaling).</li>
+    <li><strong>Fullscreen Window</strong> — the game window is scaled to the system resolution. <strong>The best option</strong> for native resolution, or for a non-native resolution if you want stretching, but MPO is mandatory in that case.</li>
     <br>
-    <li><strong>Borderless Windowed</strong> — Game window renders as-is <strong>without scaling or borders</strong> (ideal for native resolution).</li>
+    <li><strong>Borderless Window</strong> — the game window is displayed as is, <strong>without scaling or borders</strong> (the best option for native resolution).</li>
     <br>
-    <li><strong>Windowed (Bordered)</strong> — Renders inside a standard window frame.</li>
+    <li><strong>Bordered Window</strong> — the game is displayed as an ordinary window with borders.</li>
     <br>
-    <li><strong>Unity / Unreal Engine Windowed</strong> — These engines feature unique window handling where game swapchains remain tied to system resolution. Changing in-game resolution alters render resolution rather than swapchain resolution. This is why many UE games prevent windowed resolution changes.</li>
+    <li><strong>Unity/Unreal Engine Window</strong> — these engines have a special window mode in which the game's swapchain always depends on the system resolution. Changing the resolution in the game settings changes the rendering resolution, but not the swapchain. This is why most UE games do not let you change resolution in windowed mode.</li>
 </ol>
 <hr class="section-divider">
 <h2 id="monitoring">Monitoring Present Mode</h2>
 
-<p>RTSS is the recommended tool for monitoring present modes.</p>
+<p>RTSS is the best option for monitoring.</p>
 
 <ol>
     <li><a href="https://www.guru3d.com/download/rtss-rivatuner-statistics-server-download/" target="_blank">Download and install the latest RTSS version from the official website</a></li>
-    
+
     <br>
-    
+
     <li><a href="https://drive.google.com/drive/folders/1dGwj1RETFjVel2NSwOdF1b1RXcBTBA1d?usp=sharing">Download the overlay file</a> and place it in <strong>C:\Program Files (x86)\RivaTuner Statistics Server\Plugins\Client\Overlays</strong></li>
-    
+
     <br>
-    
-    <li>Open RTSS and click the Setup button:
-        <img src="images/rtss1.png" alt="Setup Button in RTSS">
+
+    <li>Open RTSS and click Setup:
+        <img src="../images/rtss1.png" alt="Setup button in RTSS" width="523" height="68" loading="lazy" decoding="async">
     </li>
-    
-    <li>Navigate to the Plugins tab, check OverlayEditor, and open it by double-clicking (or clicking Setup below):
-        <img src="images/rtss2.png" alt="Plugins Tab in RTSS">
+
+    <li>Open the Plugins tab, enable OverlayEditor, and open it by double-clicking it (or using Setup below):
+        <img src="../images/rtss2.png" alt="Plugins tab in RTSS" width="422" height="156" loading="lazy" decoding="async">
     </li>
-    
-    <li>Select Layouts -> Load -> choose the downloaded .ovl file:
-        <img src="images/rtss3.png" alt="Loading OVL File">
+
+    <li>Then choose Layouts -> Load -> select the downloaded .ovl file:
+        <img src="../images/rtss3.png" alt="Loading an ovl file" width="800" height="422" loading="lazy" decoding="async">
     </li>
-    
-    <li>Close OverlayEditor, click Apply, and launch your game. 
-        <img src="images/rtss4.png" alt="Overlay Preview">
+
+    <li>Close OverlayEditor, click Apply, and launch the game.
+        <img src="../images/rtss4.png" alt="Overlay" width="704" height="435" loading="lazy" decoding="async">
     </li>
 </ol>
 
-<p><strong>Presentation Model Statuses:</strong></p>
-<p>👍 Optimal (Minimal Latency):</p>
+<p><strong>Presentation Model:</strong></p>
+<p>👍 Minimal latency if it shows</p>
 <ul class="status-list">
     <li class="status-green"><strong>Hardware: Independent Flip</strong></li>
     <li class="status-green"><strong>Hardware Composed: Independent Flip</strong></li>
@@ -244,165 +259,266 @@
     <li class="status-yellow"><strong>Hardware: Legacy Copy to front buffer</strong></li>
 </ul>
 
-<p>👎 Suboptimal (Added Latency):</p>
+<p>👎 Unwanted latency</p>
 <ul class="status-list">
     <li class="status-red"><strong>Composed: Flip</strong></li>
     <li class="status-red"><strong>Composed: Copy with GPU GDI</strong></li>
     <li class="status-red"><strong>Composed: Copy with CPU GDI</strong></li>
 </ul>
 
-<p><strong>Reflex Sim-to-Render Latency</strong> — Reflects time elapsed between Simulation start and GPU frame completion.<br>
-Reflex markers detail game pipeline steps from Sim to GPU Render completion, but do not track events during DWM composition (Composite stage).</p>
+<p><strong>Reflex Sim-to-Render latency</strong> — the time interval from the start of Simulation to completion of the frame on the GPU.<br>
+Reflex markers also provide detailed information about the game pipeline from Sim to the end of GPU Render, but cannot see what happens at the composition stage (Composite).</p>
 
-<img src="images/pcl1.png" alt="Reflex Sim-to-Render Latency Diagram">
+<img src="../images/pcl1.png" alt="Reflex Sim-to-Render latency diagram" width="1999" height="591" loading="lazy" decoding="async">
 
-<p><strong>Present-To-Display</strong> — The interval between calling the Present() API function and actual frame buffer updates (scanout to display).</p>
+<p><strong>Present-To-Display</strong> — the time between the Present() call and the framebuffer change (sending it to the monitor).</p>
 
-<img src="images/pcl2.png" alt="Present-To-Display Latency Diagram">
-    
+<img src="../images/pcl2.png" alt="Present-To-Display latency diagram" width="1999" height="283" loading="lazy" decoding="async">
 
-<h2 id="check-mpo">Checking MPO Support</h2>
+
+<h2 id="check-mpo">Checking MPO Operation</h2>
 <ol>
-    <li><a href="https://www.special-k.info/" target="_blank">Download and install SpecialK</a></li>
-    <li>Launch SpecialK (SKIF) and open the Hardware tab</li>
-    <li>Verify whether MPO is supported and active</li>
+    <li><a href="https://www.special-k.info/" target="_blank">Download and install Special K</a></li>
+    <li>Launch Special K (SKIF) and open the Hardware tab</li>
+    <li>Check whether MPO is working</li>
 </ol>
 
-<img src="images/skif1.png" alt="Checking MPO Support in SpecialK">
+<img src="../images/skif1.png" alt="Checking MPO support in Special K" width="982" height="280" loading="lazy" decoding="async">
 
-<p>SKIF will offer to reset registry settings if invalid registry tweaks were previously applied 😊<br>
-Right-clicking the MPO status area refreshes status in real time.</p>
+<p>SKIF will immediately offer to reset your registry settings if you have been following optimization advice 😊<br>
+Right-click the MPO area to refresh it in real time.</p>
 
-<img src="images/skif2.png" alt="MPO Context Menu in SpecialK">
+<img src="../images/skif2.png" alt="MPO context menu in Special K" width="204" height="120" loading="lazy" decoding="async">
 
-<h3>In-Game Verification</h3>
+<h3>Checking In-Game</h3>
 
-<p>While using the RTSS overlay, press Win+G to open Xbox Game Bar. If the present mode remains in <strong>Independent Flip</strong>, MPO is functioning correctly.</p>
+<p>With the RTSS overlay running, open Xbox Game Bar (Win+G). If the game remains in <strong>independent flip</strong>, MPO is working.</p>
 
-<img src="images/MPO.gif" alt="Game without MPO (Game Bar)">
+<video controls loop muted playsinline preload="none" poster="../images/MPO-poster.png" aria-label="Game without MPO (Game Bar)">
+    <source src="../images/MPO.mp4" type="video/mp4">
+    <a href="../images/MPO.gif">Game without MPO (Game Bar)</a>
+</video>
 <p style="text-align: center;"><strong>Without MPO</strong></p>
 
-<img src="images/NoMPO.gif" alt="Game with MPO (Game Bar)">
+<video controls loop muted playsinline preload="none" poster="../images/NoMPO-poster.png" aria-label="Game with MPO (Game Bar)">
+    <source src="../images/NoMPO.mp4" type="video/mp4">
+    <a href="../images/NoMPO.gif">Game with MPO (Game Bar)</a>
+</video>
 <p style="text-align: center;"><strong>With MPO</strong></p>
 
-<h2 id="mpo-problems">MPO & Composed Flip Issues</h2>
+<h2 id="mpo-problems">MPO and Composed Flip Problems</h2>
 
-<p>If your GPU supports <strong>MPO</strong> in hardware but SpecialK shows it as disabled, common culprits include:</p>
+<p>If your graphics card has hardware support for <strong>MPO</strong> but Special K does not report it, the problem is most likely caused by one of the following:</p>
 
-<p>Most issues stem from unnecessary user tweaks: aggressive driver tweaks or manual registry edits often backfire and degrade presentation performance.</p>
+<p>Problems most often arise from excessive user tweaking: attempts to optimize, remove, or reconfigure something in the driver have the opposite effect and only make things worse.</p>
 
 <ul>
 
     <br>
 
-    <li><strong>Disabling FSO and Optimizations for Windowed Games.</strong> Strongly discouraged! Disabling these features permanently blocks older titles from using modern Flip presentation models.</li>
+    <li><strong>Disabling FSO and Optimizations for windowed games.</strong> This is strongly discouraged! Disabling them permanently blocks older games from using the Flip model.</li>
 
     <br>
 
-    <li><strong>Unnecessary modifications in Adjust Desktop Size and Position settings.</strong> Changing options here can break MPO functionality.
+    <li><strong>Do not change Adjust Desktop Size and Position unnecessarily.</strong> Changes here can break MPO.
         <br>
-        <img src="images/nvcp1.png" alt="Default Settings">
-        <br><em>Default Settings</em>
+        <img src="../images/nvcp1.png" alt="Default settings" width="576" height="531" loading="lazy" decoding="async">
+        <br><em>Default settings</em>
     </li>
 
     <br>
 
-    <li><strong>Disabling MPO via Registry Tweaks</strong> based on internet advice.</li>
+    <li><strong>MPO disabled through the registry</strong> following advice from the internet.</li>
 
     <br>
 
-    <li><strong>NVIDIA App / AMD Adrenalin Instant Replay</strong> with "Desktop Recording" enabled breaks MPO capability.</li>
+    <li><strong>Recording and Instant Replay</strong> in NVIDIA app/AMD Adrenalin with desktop recording enabled break MPO.</li>
 
     <br>
 
-    <li><strong>Using NIS (NVIDIA Image Scaling driver-level upscaler).</strong> Enabling driver spatial scaling disables MPO system-wide.
+    <li><strong>Do not use NIS (the driver-level upscaler).</strong> Enabling it immediately breaks MPO system-wide.
         <br>
-        <img src="images/nvcp2.png" alt="NIS Settings">
+        <img src="../images/nvcp2.png" alt="NIS settings" width="667" height="412" loading="lazy" decoding="async">
     </li>
 
     <br>
 
-    <li><strong>NVIDIA Driver assigning all MPO planes to display 1</strong>, leaving secondary displays without hardware planes.
+    <li><strong>The Nvidia driver assigns all MPO planes to just one monitor</strong>, which may leave your primary monitor without them.
         <br>
-        <img src="images/skif3.png" alt="Multi-monitor MPO">
+        <img src="../images/skif3.png" alt="MPO on multiple monitors" width="392" height="100" loading="lazy" decoding="async">
         <br>
-        To restore MPO to your main display, re-assign it as Primary in NVCP/NVAPP or toggle primary display assignments.
+        To restore MPO on the primary monitor, set it as primary in NVCP/NVAPP OR switch the primary designation to the second monitor and then back to the main one.
         <br>
-        <img src="images/nvcp3.png" alt="Set Primary Display in NVCP">
+        <img src="../images/nvcp3.png" alt="Setting the primary display in NVCP" width="1223" height="1002" loading="lazy" decoding="async">
     </li>
 
     <br>
 
-    <li><strong>Discord Overlay</strong> breaks MPO and VRR operation.</li>
-    <li><strong>Overwolf Overlay</strong> can trigger Composed Flip when MPO is absent.</li>
+    <li><strong>The Discord overlay</strong> breaks MPO and VRR.</li>
+    <li><strong>The Overwolf overlay</strong> can cause Composed Flip if you do not have MPO.</li>
 
     <br>
-    <li><strong>RTX Video Super Resolution & RTX Video HDR</strong> disable MPO when video playback occurs in browser windows.</li>
+    <li><strong>RTX Video Super Resolution and RTX Video HDR</strong> disable MPO while video is playing/the browser is running.</li>
     <br>
 
     <br>
-    <li><strong>WGC Capture Mode</strong> forces Composed Flip when MPO is inactive.</li>
+    <li><strong>WGC capture</strong> causes Composed Flip if there is no MPO.</li>
     <br>
 
-
-    <br>
-
-    <li><strong>4K Video Playback</strong> in web browsers can disrupt MPO support on certain configurations.</li>
 
     <br>
 
-    <li><strong>DSC (Display Stream Compression)</strong> on NVIDIA GPUs prior to RTX 5000 disables MPO. <a href="https://trychen.com/feature/video-bandwidth" target="_blank">DSC Bandwidth Calculator</a>.</li>
+    <li><strong>Playing 4K video</strong> in a browser can break MPO on some systems.</li>
 
     <br>
 
-    <li><strong>Legacy Titles Native to BitBlt:</strong> Switching windowed modes can force fallbacks to <strong>Composed Flip</strong> because older titles do not issue ResizeBuffers API calls. Restarting the game or toggling resolutions resets the swapchain state.</li>
+    <li><strong>DSC (Display Stream Compression)</strong> disables MPO on Nvidia graphics cards older than the RTX 5000 series. <a href="https://trychen.com/feature/video-bandwidth" target="_blank">DSC calculator</a>.</li>
 
     <br>
 
-    <li><strong>Windows Activation Watermark</strong> acts as a system overlay and forces Composed Flip when MPO is disabled.</li>
+    <li><strong>For older games that natively use BitBlt,</strong> switching window modes triggers a transition to <strong>Composed Flip</strong> because these applications do not call ResizeBuffers during the switch. You need to restart the game or change the resolution and then change it back.</li>
 
     <br>
 
-    <li><strong>10-bit Color in SDR</strong> breaks MPO on older OS builds. Fixed in Windows 11 24H2 with modern GPU drivers.</li>
+    <li><strong>The Windows activation watermark</strong> acts as an overlay and causes Composed Flip if there is no MPO.</li>
 
     <br>
 
-    <li><strong>Laptops with MUX Switches:</strong> Switching to Discrete GPU mode (dGPU only) on <strong>certain laptops</strong> can lose MPO support.</li>
-
-    <br>
-    
-    <br>
-
-    <li><strong>Dual-Monitor Setup Issues</strong> (WIP) ...........</li>
+    <li><strong>10-bit SDR</strong> breaks MPO on older Windows versions. This was fixed in Windows 11 24H2 and current Nvidia drivers.</li>
 
     <br>
 
-    <li><strong>Disabled Windows Game Mode & Xbox Game Bar.</strong> These components handle Game Mode power profile triggers, Optimizations for Windowed Games, and Windows VRR.
+    <li><strong>Laptops with a MUX switch.</strong> Switching to discrete graphics mode (dGPU only) on <strong>some</strong> laptops causes MPO support to be lost.</li>
+
+    <br>
+
+    <br>
+
+    <li><strong>Two monitors</strong> (WIP) ...........</li>
+
+    <br>
+
+    <li><strong>Windows Game Mode and Xbox Game Bar disabled.</strong> They play an important role in activating the Game Mode power plan, Optimizations for windowed games, and Windows VRR.
         <br>
-        <img src="images/game1.png" alt="Windows Game Mode">
+        <img src="../images/game1.png" alt="Windows Game Mode" width="1068" height="168" loading="lazy" decoding="async">
         <br>
-        If a game is not recognized automatically, you can manually mark it as a game inside Xbox Game Bar.
+        If the game is not recognized, you can mark it as a game manually in Xbox Game Bar.
         <br>
-        <img src="images/game2.png" alt="Xbox Gamebar Settings">
+        <img src="../images/game2.png" alt="Xbox Gamebar Remember this is a game" width="332" height="626" loading="lazy" decoding="async">
     </li>
 </ul>
 
-<h3 id="dldsr">(DL)DSR</h3><br>
-<p>Because (DL)DSR disables MPO, strictly following standard DirectFlip conditions becomes essential.</p>
-<p>To avoid composed:flip, set your desired (DL)DSR resolution in Windows display settings before launching the game.</p> 
+<h3 id="dldsr">(DL)Dsr</h3><br>
+<p>Since (DL)DSR disables MPO, it is essential to follow the standard DirectFlip rules strictly.</p>
+<p>To avoid Composed: Flip, always set the (DL)DSR resolution in Windows settings before launching the game.</p>
 
 
-<h2 id="interop">OpenGL / Vulkan on DXGI (WIP)</h2>
-<p>Natively in Windows, OpenGL and Vulkan games have two presentation paths — Fullscreen FSE (Hardware: Legacy Flip) and Windowed BitBlt (Copy: GPU GDI). They do not interface with DXGI directly.</p>
-<p>For modern presentation options...</p>
+<h2 id="interop">OpenGL and Vulkan: DXGI Interop</h2>
+<p>Natively on Windows, OpenGL and Vulkan games have two paths: fullscreen in FSE (Hardware: Legacy Flip) and windowed in BitBlt (Composed: Copy with GPU GDI). In other words, these games do not work through the DXGI subsystem directly.</p>
 
-<h2 id="sources">📚 Sources & Useful Links</h2>
+<h3 id="nv-interop">Nvidia Driver Interop (Layered on DXGI Swapchain)</h3>
+<p>To convert a Vulkan or OpenGL game, open the <strong>game profile</strong> in NVAPP/NVCP and select <strong>Vulkan/OpenGL Present Method: Prefer layered on DXGI Swapchain</strong>.</p>
+
+<img src="../images/nvappdxgi.png" alt="Vulkan/OpenGL Present Method: Prefer layered on DXGI Swapchain in NVAPP" width="752" height="300" loading="lazy" decoding="async">
+
+<div class="note">
+    <strong>Warning:</strong> Do not change this setting in the Global profile! Enable it only in the individual <strong>profile for the specific game</strong>.
+</div>
+
+<h3 id="sk-interop">Special K Interop (OpenGL Only)</h3>
+<p>Because Nvidia's built-in interop has very high GPU overhead in OpenGL (for example, in Minecraft with demanding shaders, performance can drop to less than half), for OpenGL I recommend using <strong>Special K</strong>.</p>
+
+<p>All you need to do is add the game's <code>.exe</code> executable to its launcher (SKIF) and launch the game through it. Special K will inject itself and configure the DXGI SwapChain automatically.</p>
+
+<p>If Special K has injected successfully, you will see <strong>OpenGL-IK</strong> in its control panel. This means Special K's own interop is working.</p>
+
+<img src="../images/SKOGL.png" alt="OpenGL-IK in the Special K control panel" width="860" height="170" loading="lazy" decoding="async">
+
+<hr class="section-divider">
+
+<h2 id="dx9-wrappers">DirectX 9 Wrappers (dgVoodoo2 and DXVK)</h2>
+<p>Older games based on classic DirectX 9 cannot use the modern Flip model natively. Moving to a modern API enables DXGI SwapChain and the benefits of borderless windowed/fullscreen mode.</p>
+
+<h3 id="dgvoodoo">dgVoodoo2</h3>
+<p><strong>dgVoodoo2</strong> — a wrapper that translates legacy graphics APIs (DirectDraw, Direct3D 1–9, and Glide) to <strong>Direct3D 11/12</strong>. It moves older games to a modern DXGI SwapChain, enabling the benefits of borderless windowed mode and the Flip presentation model.</p>
+
+<ol>
+    <li><a href="https://dege.freeweb.hu/dgVoodoo2/dgVoodoo2/" target="_blank">Download the dgVoodoo2 archive</a> from the developer's official website.</li>
+
+    <br>
+
+    <li>Extract the archive and copy the control panel file <code>dgVoodooCpl.exe</code> and the configuration file <code>dgVoodoo.conf</code> to the game root folder (next to the main <code>.exe</code> file).</li>
+
+    <br>
+
+    <li>Determine whether the game is 32-bit or 64-bit (the vast majority of older DirectX 9 games are 32-bit, i.e., <strong>x86</strong>).
+        <ul class="custom-list">
+            <li>Open the <code>MS/x86/</code> folder inside the downloaded archive (or <code>MS/x64/</code> if the game is 64-bit).</li>
+            <li>Copy the <code>D3D9.dll</code> library (for DirectX 9 games) or <code>D3D8.dll</code> (for DirectX 8) to the game root folder next to the <code>.exe</code> file.</li>
+        </ul>
+    </li>
+
+    <br>
+
+    <li>Launch the game and check the result with <strong>RTSS</strong>:
+        <ul class="custom-list">
+            <li>Instead of the old D3D9, the API line will show <strong>D3D11</strong>.</li>
+            <li>Presentation Model will switch to <strong>Hardware: Independent Flip</strong>.</li>
+            <li>A dgVoodoo watermark will appear in the bottom-right corner of the screen, indicating that rendering has been successfully intercepted.</li>
+        </ul>
+    </li>
+
+    <br>
+
+    <li><strong>To remove the watermark:</strong> open <code>dgVoodooCpl.exe</code> in the game folder, go to the <strong>DirectX</strong> tab, uncheck <strong>dgVoodoo Watermark</strong> and click <strong>Apply</strong>.</li>
+</ol>
+
+<h3 id="dxvk">DXVK (Including NPI Configuration for DXGI)</h3>
+<p><strong>DXVK</strong> translates DirectX 9 calls to modern Vulkan. To route frame output through the modern <strong>DXGI Flip Model</strong>, configure the Nvidia driver through NPI.</p>
+
+<ol>
+    <li><a href="https://github.com/doitsujin/dxvk/releases" target="_blank">Download the DXVK archive</a> from GitHub.</li>
+
+    <br>
+
+    <li>Copy <code>d3d9.dll</code> from the <code>x32/</code> folder (or <code>x64/</code>) to the game root folder next to the <code>.exe</code> file.</li>
+
+    <br>
+
+    <li>Open <a href="https://github.com/Orbmu2k/nvidiaProfileInspector/releases" target="_blank"><strong>Nvidia Profile Inspector (NPI)</strong></a>, find the game profile, and under <strong>02 - Sync and Refresh</strong> set two parameters:
+        <ul class="custom-list">
+            <li><strong>Vulkan/OpenGL present method:</strong> <code>0x00000001 (Prefer layered on DXGI Swapchain)</code></li>
+            <li><strong>Vulkan/OpenGL present method: Flags:</strong> <code>Treat DXVK as Native</code></li>
+        </ul>
+        <img src="../images/NPIDXVK.png" alt="Vulkan/OpenGL present method settings in Nvidia Profile Inspector" width="1018" height="110" loading="lazy" decoding="async">
+        Click <strong>Apply changes</strong>.
+    </li>
+
+    <br>
+
+    <li>Launch the game and check in <strong>RTSS</strong>: the API will be <strong>Vulkan</strong>, and Present Mode will switch to <strong>Hardware: Independent Flip</strong>.</li>
+</ol>
+
+<div class="note">
+    <p><strong>If the game keeps ignoring d3d9.dll:</strong></p>
+    <p>Some games load DirectX directly from <code>System32</code>, ignoring files in their own folder. To force Windows to load the local DXVK:</p>
+    <ol>
+        <li>Create an empty file in the game folder with the extension <code>.local</code> (for example, for <code>game.exe</code> create a file named <code>game.exe.local</code>).</li>
+        <li>In the registry, at:<br>
+            <code>HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\</code><br>
+            create a subkey with the exact executable name (for example, <code>game.exe</code>).</li>
+        <li>Inside it, create a <strong>DWORD (32-bit) Value</strong> named <code>DevOverrideEnable</code> with the value <code>1</code>.</li>
+    </ol>
+</div>
+
+<h2 id="sources">📚 Sources and Useful Links</h2>
         <ul class="custom-list">
             <li><a href="https://devblogs.microsoft.com/directx/dxgi-flip-model/" target="_blank">DirectX Developer Blog: For best performance, use DXGI flip model</a></li>
             <li><a href="https://wiki.special-k.info/Presentation_Model" target="_blank">Special K Wiki - Presentation Model</a></li>
             <li><a href="https://youtu.be/E3wTajGZOsA?si=eqIk2Slkfg7SrZbm" target="_blank">DirectX 12: Presentation Modes In Windows 10</a></li>
             <li><a href="https://wiki.special-k.info/en/SwapChain" target="_blank">SwapChain Science | Special K - The Official Wiki</a></li>
-            <li><a href="https://walbourn.github.io/care-and-feeding-of-modern-swap-chains-3/" target="_blank">The Care and Feeding of Modern Swap Chains (part 3) | Games for Windows and DirectX SDK blog</a></li>
+            <li><a href="https://walbourn.github.io/care-and-feeding-of-modern-swap-chains-3/" target="_blank">The Care and Feeding of Modern Swap Chains (part 3) | Games for Windows and the DirectX SDK blog</a></li>
+            <li><a href="https://github.com/Orbmu2k/nvidiaProfileInspector/releases" target="_blank">Nvidia Profile Inspector Releases (GitHub)</a></li>
             </ul>
 
         <hr class="article-divider">
@@ -410,6 +526,7 @@ Right-clicking the MPO status area refreshes status in real time.</p>
 
         </div>
 
+    <p class="translation-note">This English translation was produced primarily using AI.</p>
 </main>
 
 </div>
@@ -419,7 +536,7 @@ Right-clicking the MPO status area refreshes status in real time.</p>
     <img class="modal-content" id="zoomedImg">
 </div>
 
-<script src="script.js"></script>
+<script src="../script.js"></script>
 
 </body>
 </html>

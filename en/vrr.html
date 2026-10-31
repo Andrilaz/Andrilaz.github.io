@@ -4,19 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VRR | Guide</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
+    <meta name="description" content="A guide to VRR: G-Sync, FreeSync, V-Sync, FPS limits and variable refresh rate settings.">
+    <link rel="canonical" href="https://andrilaz.github.io/en/vrr">
+    <meta property="og:type" content="article">
+    <meta property="og:site_name" content="Andrilaz">
+    <meta property="og:title" content="VRR | Guide">
+    <meta property="og:description" content="A guide to VRR: G-Sync, FreeSync, V-Sync, FPS limits and variable refresh rate settings.">
+    <meta property="og:url" content="https://andrilaz.github.io/en/vrr">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="VRR | Guide">
+    <meta name="twitter:description" content="A guide to VRR: G-Sync, FreeSync, V-Sync, FPS limits and variable refresh rate settings.">
+    <link rel="alternate" hreflang="ru" href="https://andrilaz.github.io/vrr">
+    <link rel="alternate" hreflang="en" href="https://andrilaz.github.io/en/vrr">
 </head>
 <body>
 
 <div class="page-layout">
-    
+
     <aside class="sidebar">
-        <a href="https://andrilaz.github.io/" class="nav-link">← Home</a>
-        <h3>Table of Contents</h3>
+        <a href="index.html" class="nav-link">← Home</a>
+        <h3>Contents</h3>
         <ul class="toc-list">
             <li><a href="#reference">Reference</a></li>
             <li><a href="#no-vrr">Without VRR</a></li>
-            <li><a href="#vrr-nvidia">VRR on NVIDIA</a></li>
+            <li><a href="#vrr-nvidia">VRR on Nvidia</a></li>
             <li><a href="#vrr-amd">VRR on AMD</a></li>
             <li><a href="#vrr-details">Important Details</a></li>
             <li><a href="#vrr-notes">Additional Information</a></li>
@@ -25,113 +37,125 @@
 
     <main class="content">
         <div class="header-top">
-            <h1>VRR (Variable Refresh Rate)</h1> 
+            <h1>VRR (Variable Refresh Rate)</h1>
+            <div class="header-controls">
+            <a href="../vrr.html" class="lang-btn" lang="ru" hreflang="ru" aria-label="Read this page in Russian">RU</a>
             <button id="theme-toggle" class="theme-btn">🌙</button>
+        </div>
         </div>
 
         <div class="article-meta">
             <span>Author: <strong><a href="https://t.me/Andrilazz" target="_blank"><strong>Andrilaz</a></strong>  | <a href="https://youtube.com/@maxim0v?si=k4IGFqAEaoDe-0MW" target="_blank"><strong>Max.Mov</strong></a></strong></span>
             <span class="meta-divider">•</span>
-            <span>Special thanks: <a href="https://steamcommunity.com/id/ProTos1080p/" target="_blank"><strong>ProTos1080p</strong></a></span>
+            <span>Thanks for the help: <a href="https://steamcommunity.com/id/ProTos1080p/" target="_blank"><strong>ProTos1080p</strong></a></span>
         </div>
-        
+
         <h3 id="reference">ℹ️ Reference</h3>
-            <p><strong>VRR (G-Sync / G-Sync Compatible, AMD FreeSync, VESA Adaptive-Sync, HDMI 2.1 VRR)</strong> — Technology that synchronizes monitor refresh rate dynamically with in-game frame rates. Designed to eliminate V-Sync drawbacks while providing tear-free, fluid visuals with minimal display delay within its operating range. It is not a silver bullet if game engine stutter issues exist.</p>
-            <p> <a href="https://youtu.be/xpbVMHOSAmk?si=_P_qf42b81jBiC7f" target="_blank">Why VRR does not replace V-Sync: Video Explanation</a></p>
+            <p><strong>VRR (G-Sync / G-Sync Compatible, AMD FreeSync, VESA Adaptive-Sync, HDMI 2.1 VRR)</strong> – a technology that synchronizes the monitor's refresh rate with the game's frame rate. It is designed to eliminate the negative effects of V-Sync and provide a smooth, tear-free image with the lowest latency within its operating range. However, it is no cure for a game's stuttering problems.</p>
+            <p> <a href="https://youtu.be/xpbVMHOSAmk?si=_P_qf42b81jBiC7f" target="_blank">Why is VRR not a replacement for V-Sync? This video explains</a></p>
 
-            <p><strong>V-Sync (Vertical Synchronization)</strong> — Driver setting (NVCP / NVAPP) or in-game toggle. Simply put: V-Sync forces system pipelines to wait until display scanout completes the current frame. V-Sync remains necessary alongside VRR to eliminate frame time variance tearing completely.</p>
+            <p><strong>V-Sync (Vertical Sync Pulse / Vertical Synchronization)</strong> – a setting in the driver (NVCP / NVAPP) or the game itself. Put simply, V-Sync makes the system wait until the monitor has completely finished drawing the current frame. It is required for VRR to work correctly, since it eliminates tearing entirely by compensating for frametime variance.</p>
 
-            <p><strong>NVCP / NVAPP</strong> — NVIDIA Control Panel or the new NVIDIA App application.</p>
+            <p><strong>NVCP / NVAPP</strong> – the NVIDIA Control Panel or the newer NVIDIA app.</p>
 
-            <p><strong>Low Latency Mode</strong> — Driver-level setting in NVIDIA Control Panel (Low Latency Mode / LLM). When set to "Ultra", it is referred to as ULLM/NULL (NVIDIA Ultra Low Latency Mode), referencing zero frame queueing.</p>
+            <p><strong>Low Latency Mode</strong> – an NVIDIA driver setting, also known as LLM. When set to Ultra, it is also called ULLM/NULL (Nvidia Ultra Low Latency mode), referring to a zero-frame queue.</p>
 
 <hr class="section-divider">
-        <h3 id="vrr-nvidia">🟢 VRR on NVIDIA</h3>
+        <h3 id="vrr-nvidia">🟢 VRR on Nvidia</h3>
         <ol>
-            <li>Enable VRR (G-Sync / G-Sync Compatible, AMD FreeSync, VESA Adaptive-Sync, HDMI 2.1 VRR) <strong>on your monitor</strong> via its OSD menu.</li>
+            <li>Enable VRR (G-Sync / G-Sync Compatible, AMD FreeSync, VESA Adaptive-Sync, HDMI 2.1 VRR) <strong>on the monitor itself</strong> through its OSD menu.</li>
             <li>
-                <strong>Enable VRR in drivers:</strong>
+                <strong>Enabling VRR in the driver:</strong>
                 <ul>
-                    <li><strong>NVIDIA App (NVAPP):</strong> Navigate to <em>System -> G-SYNC & Surround</em> -> Enable G-SYNC for <strong>FULL SCREEN MODE ONLY</strong>. Under <em>Display Properties</em>, check <em>"Enable settings for the selected display model"</em>.</li>
-                    <li><strong>NVIDIA Control Panel (NVCP):</strong> Navigate to <em>Set up G-SYNC</em> -> Enable <em>G-SYNC</em> -> Choose <strong>FULL SCREEN MODE ONLY</strong>. Below, select your display and check <em>Enable settings for the selected display model</em>.</li>
+                    <li><strong>If you use NVIDIA app (NVAPP):</strong> Go to <em>System -> G-SYNC and Surround</em> -> enable G-SYNC for <strong>FULLSCREEN MODE ONLY</strong>. Below, under <em>Display Properties</em> check <em>“G-SYNC support: Enable G-SYNC settings...”</em>.</li>
+                    <li><strong>If you use the classic Control Panel (NVCP):</strong> Go to <em>Set up G-SYNC</em> -> enable <em>G-SYNC</em> and select <strong>FULLSCREEN MODE ONLY</strong>. Below, select the monitor and check <em>Enable settings for the selected display model</em>.</li>
                 </ul>
             </li>
-            <li>In games <strong>WITH Reflex Support</strong>: V-Sync ON (In-Game) + Reflex ON. (When working correctly, maximum FPS drops slightly below display refresh rate automatically).</li>
-            <li>In games <strong>WITHOUT Reflex Support</strong>: V-Sync ON (In-Game / or force via NVCP/NVAPP if in-game implementation is poor) + Low Latency Mode: Ultra* (Driver) <strong>OR</strong> inject Reflex via RTSS/SpecialK with a fast frame rate cap using formula: <code><strong>Refresh - (Refresh x Refresh / 3600) = FPS Cap**</strong></code>.</li>
+            <li>In games <strong>WITH Reflex support</strong>: V-Sync ON (in-game) + Reflex ON.</li> (If everything works correctly, the maximum FPS should be slightly below the monitor's refresh rate.)
+            <li>In games <strong>WITHOUT Reflex support</strong>: V-Sync ON (in-game / force it in NVCP/NVAPP if the game's implementation is poor) + Low Latency Mode: Ultra* (in the driver) <strong>OR</strong> inject Reflex through RTSS/Special K and cap FPS with a “fast” limiter using the formula <code><strong>Refresh - (Refresh x Refresh / 3600) = FPS Cap**</strong></code>.</li>
         </ol>
 <hr class="section-divider">
         <h3 id="vrr-amd">🔴 VRR on AMD</h3>
         <ol>
-            <li>Enable VRR (G-Sync / G-Sync Compatible, AMD FreeSync, VESA Adaptive-Sync, HDMI 2.1 VRR) <strong>on your monitor</strong> via its OSD menu.</li>
-            <li>In Radeon Software -> Display section -> Enable VRR / FreeSync.</li>
-            <li>In games <strong>WITH AMD Anti-Lag 2 Support</strong>: V-Sync ON (In-Game) + AMD Anti-Lag 2 ON (In-Game) + Cap frame rate using formula <code><strong>Refresh - (Refresh x Refresh / 3600) = FPS Cap**</strong></code>.</li>
-            <li>In games <strong>WITHOUT AMD Anti-Lag 2 Support</strong>: V-Sync ON (In-Game / Adrenalin) + AMD Anti-Lag ON (Driver)* + Cap frame rate using formula <code><strong>Refresh - (Refresh x Refresh / 3600) = FPS Cap**</strong></code>.</li>
+            <li>Enable VRR (G-Sync / G-Sync Compatible, AMD FreeSync, VESA Adaptive-Sync, HDMI 2.1 VRR) <strong>on the monitor itself</strong> through its OSD menu.</li>
+            <li>In the driver settings -> Display -> enable VRR/FreeSync (the name depends on the connection type/monitor technology).</li>
+            <li>In games <strong>WITH AMD Anti-Lag 2 support</strong>: V-Sync ON (in-game) + AMD Anti-Lag 2 ON (in-game) + a fast FPS limiter using the formula <code><strong>Refresh - (Refresh x Refresh / 3600) = FPS Cap**</strong></code>.</li>
+            <li>In games <strong>WITHOUT AMD Anti-Lag 2 support</strong>: V-Sync ON (in-game/Adrenalin) + AMD Anti-Lag ON (in the driver)* + a fast FPS limiter using the formula <code><strong>Refresh - (Refresh x Refresh / 3600) = FPS Cap**</strong></code>.</li>
         </ol>
 <hr class="section-divider">
-        <h3 id="vrr-details">⭐ Important Clarifications & Details</h3>
+        <h3 id="vrr-details">⭐ Clarifications and Important Details</h3>
         <ul class="custom-list">
-            <li><strong>*</strong> If you encounter unexpected performance drops or instability with Low Latency Mode: Ultra or Anti-Lag enabled, set the toggle back to Default. Ultra mode can sometimes exhibit compatibility issues with specific DirectX 12 engines.</li>
-            <li><strong>**</strong> This dynamic Reflex limit formula ensures frame times remain safely within the active VRR window, avoiding limiter jitter. Setting exact caps via this equation is optional, as long as caps remain below the calculated value.</li>
+            <li><strong>*</strong> If you notice an unusual FPS drop or other signs of instability with Low Latency Mode: Ultra / Anti-Lag enabled, change it to Default. Ultra mode may also have poor compatibility with some DX12 games.</li>
+            <li><strong>**</strong> This is not the exact formula for Reflex's dynamic limit with VRR + V-Sync, BUT it provides headroom to stay within the VRR range and removes jitter from any type of limiter. You do not have to use this exact cap, but the key is not to go above it.</li>
         </ul>
 
         <div class="note">
             <p><strong>⚠️ Important:</strong></p>
             <ol>
-                <li><strong>Never set V-Sync, Low Latency Mode, or FPS Limiter options inside the GLOBAL driver profile (NVCP/NVAPP). Configure settings on a per-game basis when necessary.</strong></li>
-                <li>Configure the Overdrive (pixel response acceleration) setting in your monitor OSD. Usually a Medium setting provides optimal performance without excessive inverse ghosting.</li>
-                <li>Avoid using the Discord overlay as it breaks VRR. Always audit active overlays.</li>
-                <li>Enabling the G-Sync status indicator overlay inside display drivers breaks VRR.</li>
-                <li>Never enable "Dynamic Refresh Rate" under Windows Advanced Display Settings.</li>
+                <li><strong>Never change V-Sync, Low Latency Mode, or the FPS limiter in the GLOBAL driver profile (NVCP/NVAPP). Configure them individually for each game if needed.</strong></li>
+                <li>Also enable and tune the monitor's Overdrive setting (pixel response acceleration). Usually, Medium (a middle option in the list) is the best preset.</li>
+                <li>Do not use the Discord overlay; it breaks VRR. Always check other overlays as well.</li>
+                <li>The driver's G-SYNC indicator breaks VRR.</li>
+                <li>Never enable Dynamic Refresh Rate in Windows Advanced display settings.</li>
             </ol>
         </div>
 <hr class="section-divider">
-        <h3 id="windows-vrr">🔵 Optional: Disabling Windows VRR</h3>
-        <p>If you experience unusual VRR issues, try disabling this system toggle:</p>
-        <p><code><strong>Path: Settings -> System -> Display -> Graphics -> Default Graphics Settings -> Variable Refresh Rate -> OFF.</strong></code></p>      
-        <p>Disabling this will not impact VRR functionality across modern titles on Windows 11. <strong>However, disabling this setting prevents VRR from functioning when unfocused window overlays sit on top of game windows.</strong> Keep it enabled unless specific problems arise.</p>
+        <h3 id="windows-vrr">🔵 Optional: Disable Windows VRR</h3>
+        <p>If you experience unusual VRR problems, try disabling this system setting, as it can cause them.</p>
+        <p><code><strong>Path: System -> Display -> Graphics -> Advanced graphics settings -> Variable refresh rate — Off.</strong></code></p>
+        <p>On Windows 11, this will not affect VRR operation in most games. <strong>However, disabling this setting prevents VRR from working when a windowed overlay or another window appears over the game, or when the game is out of focus.</strong> Disabling it is not recommended unless you have problems.</p>
 
 <hr class="section-divider">
         <h3 id="no-vrr">🚫 Without VRR</h3>
-        <p>If your monitor has an extremely narrow VRR range (e.g., 48-75 Hz), VRR may not be worth utilizing. Test performance carefully on your setup.</p>
+        <p>If your monitor has a poor VRR range of 48–75 Hz, you probably should not use VRR at all. Test it yourself.</p>
         <hr class="section-divider">
         <h3 id="vrr-notes">Additional Information</h3>
 
-        <p><strong>1. Requirements for Correct VRR + V-Sync Functionality</strong></p>
-        <p>For VRR to operate as intended, games require Independent Flip presentation (<a href="https://andrilaz.github.io/presentation-model" target="_blank"><strong>Read detailed article</strong></a>), V-Sync (SyncInterval=1/AllowTearing off) to absorb frame time variance, and an FPS limiter below maximum display refresh rate to stay inside the VRR window. All VRR implementations rely on dynamic VBLANK intervals.</p>
+        <p><strong>1. Requirements for Correct VRR and V-Sync Operation</strong></p>
+        <p>Correct VRR operation requires Independent Flip (<a href="https://andrilaz.github.io/en/presentation-model" target="_blank"><strong>I recommend reading more</strong></a>), V-Sync (SyncInterval=1/AllowTearing off) to compensate for frametime variation, and an FPS cap below the refresh rate to stay within the VRR range and avoid engaging ordinary V-Sync. It is also worth mentioning that VRR does not change the monitor's refresh rate: an incoming frame is scanned out at maximum speed. All VRR implementations are based on dynamic VBLANK.</p>
+        <p>There is no “incorrect” V-Sync implementation at the DXGI level, but game engines can add their own behavior, which can be GOOD (for example, disabling V-Sync during loading because of engine-specific behavior, or disabling the built-in limiter) or BAD (for example, using half-refresh-rate V-Sync).</p>
+        <p>VRR is compatible only with SyncInterval = 1; values 2–4 (half-refresh-rate V-Sync) are incompatible. Forcing V-Sync through the driver overrides the flag with SyncInterval=1, limiting configuration flexibility and potentially engaging VRR in applications it was not intended for.</p>
+        <p>In modern games (DX11+ / with Reflex), <strong>in-game V-Sync usually works correctly, and you do not need to change the driver settings.</strong> The game is better off knowing that V-Sync is in use: In-game V-Sync > NVAPP V-Sync </p>
+        <blockquote><p>The driver's V-Sync setting controls only vertical synchronization itself, whereas many in-game “V-Sync” toggles control much more than frame synchronization. They can control everything from the in-game FPS limiter to the amount of resources loaded per frame (which affects loading times), and anything else the developers considered reasonable to tie to that particular setting.</p> </blockquote>
 
-        <p>In modern games (DX11+ / Reflex enabled), <strong>in-game V-Sync toggles usually function properly without forcing driver-level options.</strong> In-game settings are aware of engine states: Ingame VSync > NVAPP VSync.</p> 
-        <blockquote><p>Driver-level V-Sync controls frame presentation timing exclusively. In-game V-Sync toggles often manage broader internal engine variables—ranging from built-in frame limiters to per-frame asset streaming rates.</p> </blockquote>
+        <p><strong>2. Frame Rate Limiting (If the Game Has No Native Reflex)</strong></p>
+        <p>In-game frame rate limiters CAN have lower latency, mainly because they can wait immediately before the simulation/input stage.</p>
+        <p>If the game's limiter is poor or absent, use “fast” limiters such as RTSS Async/Back Edge Sync/Reflex mode or Special K Low Latency.</p>
+        <p>The driver limiter (NVCP/NVAPP) has significant drawbacks: it is less predictable, depends on the placement of the NvAPI_D3D_Sleep call in Reflex games, and cannot be changed on the fly.</p>
 
-        <p><strong>2. Frame Limiters (Without Native Reflex)</strong></p>
-        <p>In-game frame limiters CAN offer lower latency when implemented directly before simulation/input polling loops.</p>
-        <p>If an in-game limiter is erratic or missing, rely on fast limiters like RTSS Async/back edge sync/Reflex mode or SpecialK low-latency limiters.</p>
-        <p>Driver-level limiters (NVCP/NVAPP) have drawbacks—they are less flexible, rely on NvAPI_D3D_Sleep placement in Reflex titles, and cannot be changed on the fly.</p>
+        <p><strong>3. VRR Flicker on VA/OLED Monitors</strong><br>
+        Some flickering can be considered normal on these panel types; it depends on the specific monitor and occurs with large frametime variations.</p>
+        <p>Make sure G-SYNC is enabled for fullscreen mode only (rather than fullscreen and windowed modes), use the correct VRR settings above, and also try disabling Windows VRR.</p>
 
-        <p><strong>3. VRR Flicker on VA / OLED Panels</strong><br>
-        Minor brightness flickering is normal on VA and OLED panels during heavy frame time variance.</p>
-        <p>Verify G-SYNC is set to Fullscreen mode only, verify VRR settings, and try disabling Windows VRR.</p>
-        
-        <p><strong>4. DLSS Frame Generation with VRR + V-Sync</strong><br>
-        NVIDIA Frame Generation fully supports VRR + V-Sync (added in Driver 526.98).</p>
-        <p>Some titles gray out in-game V-Sync when Frame Gen is enabled; force V-Sync via GPU drivers (NVCP/NVAPP) in these cases.</p>
+        <p><strong>4. DLSS FG and VRR + V-Sync</strong><br>
+        Nvidia Frame Generation is fully compatible with VRR + V-Sync. Support was added in driver version 526.98: “Introduces DLSS Frame Generation support for VSync when G-SYNC is enabled”.</p>
+        <p>However, many developers block in-game V-Sync when FG is enabled, so you need to enable it manually in the driver settings (NVCP or NVAPP).</p>
+        <p>Dynamic MFG is compatible with V-Sync starting with Streamline 2.14.1 (DLSSG DLL versions 310.9.0/310.9.1).</p>
+        <p>You can also try using Smooth Motion with V-Sync.</p>
 
-        <p><strong>5. Reflex & Low Latency Mode Details</strong></p>
-        <p>The CPU, GPU, and display operate as three asynchronous execution stages. Latency builds up primarily when the CPU queues frames ahead of GPU rendering.</p>
-        <p>NVIDIA Reflex synchronizes CPU execution with GPU execution, issuing input sampling and simulation commands right before GPU frame render completion. Eliminating queueing drastically reduces delay under GPU-bound scenarios.</p>
+        <p><strong>5. Reflex in Games and Low Latency Mode</strong></p>
+        <p>The CPU, GPU, and display are three asynchronous parts of the frame queue. Most game latency arises because the CPU works ahead of the GPU.</p>
+        <p>Reflex is therefore designed to synchronize the CPU and GPU: it tells the CPU to prepare a new frame just before the GPU finishes rendering the current one. This means Reflex prevents one frame from queuing when the GPU cannot keep up with the CPU (a GPU bottleneck), significantly reducing latency. Everyone should enable it.</p>
+        <p>Reflex was also designed in part to force an FPS cap when VRR is active. When enabled together with VRR + V-Sync, Reflex should automatically cap FPS approximately according to the formula <code>Refresh - (Refresh x Refresh / 3600) = FPS Cap</code>. This provides a tear-free image and latency on a par with uncapped FPS.</p>
+        <p>Low Latency Mode: Ultra does exactly the same thing, but less efficiently; it was designed for older games where Nvidia Reflex was not yet available. It is also convenient because it does not conflict with Reflex when both are enabled, eliminating the possibility of user error.</p>
 
-        <p><strong>6. Reflex + Boost Mode Explained</strong><br>
-        Boost mode disables GPU frequency downclocking (similar to "Prefer Maximum Performance") and optionally enables aggressive marker timing optimizations (bUseMarkersToOptimize).</p>
+        <p><strong>6. What Reflex + Boost Actually Does</strong><br>
+        +Boost disables GPU frequency scaling (similar to “Prefer maximum performance” in 3D settings) and optionally applies aggressive optimization using latency markers via bUseMarkersToOptimize. The additional bUseMarkersToOptimize optimization reduces latency even more effectively, but requires competent implementation by the developer.</p>
+        <p>Unfortunately, many game developers do not know about this feature or encounter problems with it, and all their Boost mode does is prevent GPU frequency scaling (which is actually rarely useful for reducing latency). If you notice reduced FPS/stability, it is most likely a case of bUseMarkersToOptimize being used with a poor engine.</p>
 
-        <p><strong>7. Counter-Strike 2 Reflex Implementation</strong><br>
-        NVIDIA Reflex in CS2 provides measurable latency gains over non-Reflex or ULLM modes, despite community rumors regarding `-noreflex` switches.</p>
+        <p><strong>7. Specifically for CS2 Players</strong><br>
+        The Counter-Strike 2 community often discusses the claim that NVIDIA Reflex works incorrectly and should be disabled using the <code>-noreflex</code> parameter. This is only half true.</p>
+        <p>Reflex's implementation in CS2 is indeed imperfect and cannot always eliminate the entire one-frame delay, but it still gives better results than playing without it or using ULLM.</p>
+        <p>It is also important to understand that Reflex has no (or minimal) effect on frame pacing, so enabling it does not cause stutters. NVIDIA considers a 4% FPS drop with Low Latency On and a 7% drop with Low Latency + Boost normal.</p>
 
-        <p><strong>8. Hardware G-Sync Module Monitors</strong><br>
-        G-Sync module displays feature hardware Variable Overdrive and module-level LFC processing.</p>
+        <p><strong>8. Monitors with a G-Sync Module</strong><br>
+        Monitors with a G-Sync module also have Variable Overdrive, and LFC runs directly in the module.</p>
 
-        <p><strong>9. Why Avoid Windowed G-SYNC Modes?</strong><br>
-        Windowed G-SYNC was designed during Windows 7/8 when windowed apps routed through legacy DWM composition. Modern borderless windows run under Independent Flip and act as full-screen surfaces, making Windowed G-SYNC redundant and prone to unwanted desktop flickering.</p>
+        <p><strong>9. Why Not Fullscreen and Windowed G-SYNC?</strong><br>
+        This mode was designed for the Windows 7–8 era, when windowed games mostly went through DWM. On modern Windows it is unnecessary, because a windowed game is INDEPENDENT and is always considered fullscreen when it is in Independent Flip (<a href="https://andrilaz.github.io/en/presentation-model" target="_blank"><strong>I recommend reading more</strong></a>). This mode changes DWM's own rendering rate and engages VRR in any application, which ALWAYS causes problems (<a href="https://youtu.be/2Fi1QHhdqV4?t=2843&si=9AGv58AEEl0HDFRp" target="_blank"><strong>Video about Windowed G-Sync</strong></a>)</p>
 
-    </main>
+        <p class="translation-note">This English translation was produced primarily using AI.</p>
+</main>
 </div>
 
 <div id="imgModal" class="image-modal">
@@ -139,7 +163,7 @@
     <img class="modal-content" id="zoomedImg">
 </div>
 
-<script src="script.js"></script>
+<script src="../script.js"></script>
 
 </body>
 </html>
