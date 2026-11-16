@@ -342,9 +342,13 @@
                     4K @ 60Hz
                     <div class="res-sub">3840x2160</div>
                 </div>
-                <div class="preset-tile" data-preset="4k240">
-                    4K @ 240Hz
-                    <div class="res-sub">3840x2160</div>
+                <div class="preset-tile" data-preset="uw4k60">
+                    UW4K @ 60Hz
+                    <div class="res-sub">5120x2160</div>
+                </div>
+                <div class="preset-tile" data-preset="5k60">
+                    5K @ 60Hz
+                    <div class="res-sub">5120x2880</div>
                 </div>
                 <div class="preset-tile" data-preset="8k60">
                     8K @ 60Hz
@@ -409,6 +413,15 @@
 <!-- Скрипт самого калькулятора -->
 <script>
 (function() {
+    const presets = {
+        'fullhd60': { h: 1920, v: 1080, r: 60, t: 'rb2' },
+        'qhd60': { h: 2560, v: 1440, r: 60, t: 'rb2' },
+        'uwqhd60': { h: 3440, v: 1440, r: 60, t: 'rb2' },
+        '4k60': { h: 3840, v: 2160, r: 60, t: 'rb2' },
+        'uw4k60': { h: 5120, v: 2160, r: 60, t: 'rb2' },
+        '5k60': { h: 5120, v: 2880, r: 60, t: 'rb2' },
+        '8k60': { h: 7680, v: 4320, r: 60, t: 'rb2' }
+    };
     let prevHactive = 1920;
 
     function calculateBlanks(type, hactive, vactive, refresh) {
@@ -464,14 +477,6 @@
     };
 
     window.setPreset = function(presetKey) {
-        const presets = {
-            fullhd60: { h: 1920, v: 1080, r: 60, t: 'rb2' },
-            qhd60: { h: 2560, v: 1440, r: 60, t: 'rb2' },
-            uwqhd60: { h: 3440, v: 1440, r: 60, t: 'rb2' },
-            '4k60': { h: 3840, v: 2160, r: 60, t: 'rb2' },
-            '4k240': { h: 3840, v: 2160, r: 240, t: 'rb2' },
-            '8k60': { h: 7680, v: 4320, r: 60, t: 'rb2' }
-        };
         const p = presets[presetKey];
         if (p) {
             const root = document.getElementById('bandwidth-calc');
@@ -479,6 +484,7 @@
             root.querySelector('#vactive').value = p.v;
             root.querySelector('#refresh').value = p.r;
             root.querySelector('#timings').value = p.t;
+            prevHactive = p.h;
             root.querySelectorAll('.preset-tile').forEach(t => t.classList.remove('active'));
             root.querySelector(`.preset-tile[data-preset="${presetKey}"]`).classList.add('active');
             updateTimings();
@@ -494,15 +500,6 @@
         const chroma = root.querySelector('#chroma').value;
         const hblank = parseInt(root.querySelector('#hblank').value) || 0;
         const vblank = parseInt(root.querySelector('#vblank').value) || 0;
-        
-        const presets = {
-            fullhd60: { h: 1920, v: 1080, r: 60, t: 'rb2' },
-            qhd60: { h: 2560, v: 1440, r: 60, t: 'rb2' },
-            uwqhd60: { h: 3440, v: 1440, r: 60, t: 'rb2' },
-            '4k60': { h: 3840, v: 2160, r: 60, t: 'rb2' },
-            '4k240': { h: 3840, v: 2160, r: 240, t: 'rb2' },
-            '8k60': { h: 7680, v: 4320, r: 60, t: 'rb2' }
-        };
         
         root.querySelectorAll('.preset-tile').forEach(t => t.classList.remove('active'));
         const currentTimings = root.querySelector('#timings').value;
