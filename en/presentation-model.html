@@ -32,7 +32,7 @@
             <li><a href="#PMp">Presentation Models in Practice</a></li>
             <li><a href="#monitoring">Monitoring Present Mode</a></li>
             <li><a href="#check-mpo">Checking MPO</a></li>
-            <li><a href="#mpo-problems">MPO and Composed Flip Problems</a></li>
+            <li><a href="#mpo-problems">Additional Information, MPO and Composed Flip Problems</a></li>
             <li><a href="#interop">OpenGL and Vulkan: DXGI Interop</a></li>
             <li><a href="#dx9-wrappers">DirectX 9 Wrappers</a></li>
             <li><a href="#sources">Sources and Useful Links</a></li>
@@ -49,7 +49,7 @@
         </div>
 
         <div class="article-meta">
-            <span>Author: <strong><a href="https://t.me/Andrilazz" target="_blank"><strong>Andrilaz</strong></a></strong> </span>
+            <span>Author: <strong><a href="https://t.me/Andrilazzz" target="_blank"><strong>Andrilaz</strong></a></strong> </span>
             <span class="meta-divider">•</span>
         </div>
 
@@ -306,112 +306,115 @@ Right-click the MPO area to refresh it in real time.</p>
 </video>
 <p style="text-align: center;"><strong>With MPO</strong></p>
 
-<h2 id="mpo-problems">MPO and Composed Flip Problems</h2>
+<h2 id="mpo-problems">Additional Information, MPO and Composed Flip Problems</h2>
 
-<p>If your graphics card has hardware support for <strong>MPO</strong> but Special K does not report it, the problem is most likely caused by one of the following:</p>
+<p>If Special K does not report <strong>MPO</strong> on the monitor you use for gaming, start with the driver settings and display mode. If MPO is available and the game switches to <strong>Composed Flip</strong>, check Windows settings, the window mode selected in the game, and any apps that display overlays, record the screen, or play video.</p>
 
 <p>Problems most often arise from excessive user tweaking: attempts to optimize, remove, or reconfigure something in the driver have the opposite effect and only make things worse.</p>
 
+<h3>Driver and Registry Settings</h3>
+
 <ul>
-
-    <br>
-
-    <li><strong>Disabling FSO and Optimizations for windowed games.</strong> This is strongly discouraged! Disabling them permanently blocks older games from using the Flip model.</li>
-
-    <br>
-
-    <li><strong>Do not change Adjust Desktop Size and Position unnecessarily.</strong> Changes here can break MPO.
-        <br>
-        <img src="../images/nvcp1.png" alt="Default settings" width="576" height="531" loading="lazy" decoding="async">
-        <br><em>Default settings</em>
-    </li>
-
-    <br>
-
     <li><strong>MPO disabled through the registry</strong> following advice from the internet.</li>
-
-    <br>
-
-    <li><strong>Recording and Instant Replay</strong> in NVIDIA app/AMD Adrenalin with desktop recording enabled break MPO.</li>
-
-    <br>
 
     <li><strong>Do not use NIS (the driver-level upscaler).</strong> Enabling it immediately breaks MPO system-wide.
         <br>
         <img src="../images/nvcp2.png" alt="NIS settings" width="667" height="412" loading="lazy" decoding="async">
     </li>
 
-    <br>
-
-    <li><strong>The Nvidia driver assigns all MPO planes to just one monitor</strong>, which may leave your primary monitor without them.
+    <li><strong>Do not change Adjust Desktop Size and Position unnecessarily.</strong> Changes here can break MPO.
         <br>
-        <img src="../images/skif3.png" alt="MPO on multiple monitors" width="392" height="100" loading="lazy" decoding="async">
-        <br>
-        To restore MPO on the primary monitor, set it as primary in NVCP/NVAPP OR switch the primary designation to the second monitor and then back to the main one.
-        <br>
-        <img src="../images/nvcp3.png" alt="Setting the primary display in NVCP" width="1223" height="1002" loading="lazy" decoding="async">
-    </li>
-
-    <br>
-
-    <li><strong>The Discord overlay</strong> breaks MPO and VRR.</li>
-    <li><strong>The Overwolf overlay</strong> can cause Composed Flip if you do not have MPO.</li>
-
-    <br>
-    <li><strong>RTX Video Super Resolution and RTX Video HDR</strong> disable MPO while video is playing/the browser is running.</li>
-    <br>
-
-    <br>
-    <li><strong>WGC capture</strong> causes Composed Flip if there is no MPO.</li>
-    <br>
-
-
-    <br>
-
-    <li><strong>Playing 4K video</strong> in a browser can break MPO on some systems.</li>
-
-    <br>
-
-    <li><strong>DSC (Display Stream Compression)</strong> disables MPO on Nvidia graphics cards older than the RTX 5000 series. <a href="https://trychen.com/feature/video-bandwidth" target="_blank">DSC calculator</a>.</li>
-
-    <br>
-
-    <li><strong>For older games that natively use BitBlt,</strong> switching window modes triggers a transition to <strong>Composed Flip</strong> because these applications do not call ResizeBuffers during the switch. You need to restart the game or change the resolution and then change it back.</li>
-
-    <br>
-
-    <li><strong>The Windows activation watermark</strong> acts as an overlay and causes Composed Flip if there is no MPO.</li>
-
-    <br>
-
-    <li><strong>10-bit SDR</strong> breaks MPO on older Windows versions. This was fixed in Windows 11 24H2 and current Nvidia drivers.</li>
-
-    <br>
-
-    <li><strong>Laptops with a MUX switch.</strong> Switching to discrete graphics mode (dGPU only) on <strong>some</strong> laptops causes MPO support to be lost.</li>
-
-    <br>
-
-    <br>
-
-    <li><strong>Two monitors</strong> (WIP) ...........</li>
-
-    <br>
-
-    <li><strong>Windows Game Mode and Xbox Game Bar disabled.</strong> They play an important role in activating the Game Mode power plan, Optimizations for windowed games, and Windows VRR.
-        <br>
-        <img src="../images/game1.png" alt="Windows Game Mode" width="1068" height="168" loading="lazy" decoding="async">
-        <br>
-        If the game is not recognized, you can mark it as a game manually in Xbox Game Bar.
-        <br>
-        <img src="../images/game2.png" alt="Xbox Gamebar Remember this is a game" width="332" height="626" loading="lazy" decoding="async">
+        <img src="../images/nvcp1.png" alt="Default settings" width="576" height="531" loading="lazy" decoding="async">
+        <br><em>Default settings</em>
     </li>
 </ul>
 
-<h3 id="dldsr">(DL)Dsr</h3><br>
+<h4 id="dldsr">(DL)DSR</h4>
 <p>Since (DL)DSR disables MPO, it is essential to follow the standard DirectFlip rules strictly.</p>
 <p>To avoid Composed: Flip, always set the (DL)DSR resolution in Windows settings before launching the game.</p>
 
+<h3>Monitors and Display Modes</h3>
+
+<ul>
+    <li><strong>MPO with multiple monitors.</strong>
+        <ul>
+            <li><strong>GeForce RTX 50 (Blackwell).</strong> Drivers from the R610 branch onward support MPO on every display in a multi-monitor setup. If you upgraded in place from a 5xx driver, use DDU for a clean driver reinstall. Use an up-to-date build of Windows 11.</li>
+            <li>
+                <p><strong>GeForce GTX 16 and RTX 20/30/40.</strong> In a multi-monitor setup, the driver assigns all four MPO planes to one display by default. This can leave the primary monitor without MPO.</p>
+                <img src="../images/skif3.png" alt="MPO on multiple monitors" width="392" height="100" loading="lazy" decoding="async">
+                <p>To restore MPO on the primary monitor, set it as primary in NVIDIA Control Panel (NVCP) or NVIDIA App. If it is already primary, temporarily set another monitor as primary, then switch back.</p>
+                <img src="../images/nvcp3.png" alt="Setting the primary display in NVCP" width="1223" height="1002" loading="lazy" decoding="async">
+                <p><strong>Experimental workaround.</strong> A registry setting may assign two MPO planes to each monitor. Use this workaround only with two active monitors on the NVIDIA GPU. With three or more, MPO may be disabled on every display.</p>
+                <ol>
+                    <li>Open Registry Editor (<code>regedit</code>) and go to the key for your NVIDIA graphics card.<br>
+                        <code>Computer\HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0000</code><br>
+                        The <code>0000</code> key is an example. If the number differs, match the GPU model listed in <code>DriverDesc</code>.
+                    </li>
+                    <li>Create a <strong>DWORD (32-bit) Value</strong> named <code>MaxExposedPlanesPerSource</code> and set it to <code>2</code>.</li>
+                    <li>Restart Windows. Always verify MPO on both monitors in Special K and check the game’s Present Mode.</li>
+                </ol>
+            </li>
+        </ul>
+    </li>
+
+    <li>
+        <p><strong>DSC and the pixel clock limit.</strong> If a display mode exceeds the NVIDIA GPU’s single-head pixel clock limit, the GPU may use two display heads for one monitor when DSC is active. In this mode, MPO may become unavailable.</p>
+        <p>Enter your resolution, refresh rate, and timings in the <a href="../dsc.html#calculator-title">pixel clock calculator</a>, then compare the result with the threshold for your GeForce series.</p>
+        <p><strong>NVIDIA single-head pixel clock thresholds</strong></p>
+        <ul>
+            <li>GTX 16 — 1330 MHz</li>
+            <li>RTX 20 — 1330 MHz</li>
+            <li>RTX 30 — 1335 MHz</li>
+            <li>RTX 40 — 1350 MHz</li>
+            <li>RTX 50 — 1620 MHz</li>
+        </ul>
+    </li>
+
+    <li><strong>10-bit SDR</strong> breaks MPO on older Windows versions. This was fixed in Windows 11 24H2 and current Nvidia drivers.</li>
+
+    <li><strong>Laptops with a MUX switch.</strong> Switching to discrete graphics mode (dGPU only) on <strong>some</strong> laptops causes MPO support to be lost.</li>
+</ul>
+
+<h3>Windows Settings and Game Behavior</h3>
+
+<ul>
+    <li><strong>Disabling FSO and Optimizations for windowed games.</strong> This is strongly discouraged! Disabling them permanently blocks older games from using the Flip model.</li>
+
+    <li><strong>Windows Game Mode is disabled or the game is not recognized.</strong> Game Mode was introduced in Windows 10 and kicks in when the system recognizes a game.
+        <ul>
+            <li>Gives the game higher priority while it is in the foreground.</li>
+            <li>Applies Auto HDR to compatible DXGI games.</li>
+            <li>Applies VRR and MPO optimizations in games that use Flip Model. It also activates <a href="#WOW">Optimizations for windowed games</a>.</li>
+            <li>Postpones Windows Update, suppresses restart prompts, and can silence other notifications while you play.</li>
+            <li>Can pause file indexing if “Respect Device Power Mode Settings” is enabled in Search settings.</li>
+            <li><strong>Applies the Game Mode power profile with the Balanced power plan.</strong> (Make sure Balanced is selected under Power Options in the classic Control Panel.) A <em>power plan</em> is the classic power setting. The newer <em>power mode</em> setting is in Windows 11 under Settings → System → Power &amp; battery.</li>
+            <li>Optimizes CPU scheduling on supported AMD Ryzen processors, including some Ryzen X3D models.</li>
+        </ul>
+        <img src="../images/game1.png" alt="Windows Game Mode" width="1068" height="168" loading="lazy" decoding="async">
+        <p>If Windows does not recognize the game, press <kbd>Win+G</kbd> and enable “Remember this is a game” in Xbox Game Bar settings.</p>
+        <img src="../images/game2.png" alt="Remember this is a game setting in Xbox Game Bar" width="332" height="626" loading="lazy" decoding="async">
+    </li>
+
+    <li><strong>For older games that natively use BitBlt,</strong> switching window modes triggers a transition to <strong>Composed Flip</strong> because these applications do not call ResizeBuffers during the switch. You need to restart the game or change the resolution and then change it back.</li>
+</ul>
+
+<h3>Overlays, Capture, and Video</h3>
+
+<ul>
+    <li><strong>The Discord overlay</strong> breaks MPO and VRR.</li>
+
+    <li><strong>The Overwolf overlay</strong> can cause Composed Flip if you do not have MPO.</li>
+
+    <li><strong>The Windows activation watermark</strong> acts as an overlay and causes Composed Flip if there is no MPO.</li>
+
+    <li><strong>Recording and Instant Replay</strong> in NVIDIA app/AMD Adrenalin with desktop recording enabled break MPO.</li>
+
+    <li><strong>WGC capture</strong> causes Composed Flip if there is no MPO.</li>
+
+    <li><strong>RTX Video Super Resolution and RTX Video HDR</strong> disable MPO while video is playing/the browser is running.</li>
+
+    <li><strong>Playing 4K video</strong> in a browser can break MPO on some systems.</li>
+</ul>
 
 <h2 id="interop">OpenGL and Vulkan: DXGI Interop</h2>
 <p>Natively on Windows, OpenGL and Vulkan games have two paths: fullscreen in FSE (Hardware: Legacy Flip) and windowed in BitBlt (Composed: Copy with GPU GDI). In other words, these games do not work through the DXGI subsystem directly.</p>
@@ -522,8 +525,8 @@ Right-click the MPO area to refresh it in real time.</p>
             </ul>
 
         <hr class="article-divider">
-        <div class="article-footer">...
-
+        <div class="article-footer note">
+            <p><strong>Found this guide helpful?</strong> Subscribe to my <a href="https://t.me/Andrilazzz" target="_blank" rel="noopener noreferrer">Andrilaz Telegram channel</a>.</p>
         </div>
 
     <p class="translation-note">This English translation was produced primarily using AI.</p>
